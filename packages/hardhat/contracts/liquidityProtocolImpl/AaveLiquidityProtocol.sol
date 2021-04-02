@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.8.3;
+pragma solidity 0.7.6;
 
 import "../interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 import "../interfaces/aave/IProtocolDataProvider.sol";
@@ -36,5 +36,13 @@ contract AaveLiquidityProtocol is ILiquidityProtocol {
         (reserveTokenAddress, , ) = protocolDataProvider.getReserveTokensAddresses(asset);
         return reserveTokenAddress;
     }
+
+    function unlockTokens(address asset, uint256 amount) override external{
+        address reserveTokenAddress;
+        (reserveTokenAddress, , ) = protocolDataProvider.getReserveTokensAddresses(asset);
+        IERC20(reserveTokenAddress).approve(address(lendingPool), amount);
+        lendingPool.withdraw(asset, amount, msg.sender);
+    }
+
 
 }

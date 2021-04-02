@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.8.3;
+pragma solidity 0.7.6;
 
 interface ILiquidityProtocol {
     
@@ -12,4 +12,6 @@ interface ILiquidityProtocol {
     //Returns the address of reserve token (aToken, cToken, yToken, etc.)
     function getReserveTokenAddress(address asset) external view returns (address);
     
+    //Withdraws the tokens from the liquidity protocol
+    function unlockTokens(address asset, uint256 amount) external;
 }
