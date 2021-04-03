@@ -2,10 +2,10 @@
 pragma solidity 0.7.6;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract TestReserveToken is ERC20, Ownable {
-    constructor() ERC20("PDADI Test Token", "TPDADI"){
+contract TUSDMock is ERC20{
+
+    constructor() ERC20("TUSD Mock", "MTUSD"){
         _mint(msg.sender, 2000 ether);
     }
 

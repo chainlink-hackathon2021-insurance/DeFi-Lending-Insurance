@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-import "./interfaces/uniswap/IUniswapV2Router02.sol";
+import "./interfaces/uniswap/IUniswapRouter.sol";
 import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 
 contract LiquidityProtocolInsurance is Ownable{
@@ -48,7 +48,7 @@ contract LiquidityProtocolInsurance is Ownable{
         uint256 amountPaid
     );
 
-    IUniswapV2Router02 uniswap;
+    IUniswapRouter public uniswap;
     
     address[] public liquidityProtocolImplementations;
     InsurancePolicy[] public insurancePolicies;
@@ -63,7 +63,7 @@ contract LiquidityProtocolInsurance is Ownable{
     constructor(address[] memory _liquidityProtocolImplementations, address _insuranceLiquidityTokenAddress, address _uniswapRouterAddress) {
         liquidityProtocolImplementations = _liquidityProtocolImplementations;
         insuranceLiquidityTokenAddress = _insuranceLiquidityTokenAddress;
-        uniswap = IUniswapV2Router02(_uniswapRouterAddress);
+        uniswap = IUniswapRouter(_uniswapRouterAddress);
     }
 
     modifier validateLiquidityProtocolAddress(address _liquidityProtocolAddress) {

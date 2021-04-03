@@ -3,20 +3,20 @@ pragma solidity 0.7.6;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "./TestReserveToken.sol";
+import "./ReserveTokenMock.sol";
 import "../interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 
 //Test Mock contract used for unit tests. DO NOT deploy this!
-contract TestLiquidityProtocol is ILiquidityProtocol {
+contract LiquidityProtocolMock is ILiquidityProtocol {
 
-    TestReserveToken private reserveToken;
+    ReserveTokenMock private reserveToken;
 
     mapping(address => uint256) public reserves;
     mapping(address => address) public reserveTokenToUnderlyingToken;
     mapping(address => address) public underlyingTokenToReserveToken;
 
     constructor () {
-        reserveToken = new TestReserveToken();
+        reserveToken = new ReserveTokenMock();
     }
 
     function getReserve(address asset) override external view returns (uint256){
