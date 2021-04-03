@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.7.6;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 import "../interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 import "../interfaces/aave/IProtocolDataProvider.sol";
 import "../interfaces/aave/ILendingPool.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract AaveLiquidityProtocol is ILiquidityProtocol {
     

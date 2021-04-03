@@ -4,7 +4,19 @@ const { solidity } = require("ethereum-waffle");
 
 use(solidity);
 
-describe("My Dapp", function () {
+describe("Liquidity Protocol Insurance App", () => {
+  let insuranceContract;
+
+  describe("LiquidityProtocolInsurance", () => {
+    it("should deploy the insurance contract", async () => {
+        const LiquidityProtocolInsurance = await ethers.getContractFactory("LiquidityProtocolInsurance");
+        insuranceContract = await LiquidityProtocolInsurance.deploy();
+    });
+  });
+
+});
+
+/*describe("My Dapp", function () {
   let myContract;
 
   describe("YourContract", function () {
@@ -23,4 +35,4 @@ describe("My Dapp", function () {
       });
     });
   });
-});
+});*/

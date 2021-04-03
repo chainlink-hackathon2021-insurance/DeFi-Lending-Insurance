@@ -4,12 +4,13 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 import "./interfaces/uniswap/IUniswapV2Router02.sol";
 import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 
 contract LiquidityProtocolInsurance is Ownable{
-
+    using SafeMath for uint256;
 
     struct CoverageData{
         address beneficiary;
@@ -164,9 +165,8 @@ contract LiquidityProtocolInsurance is Ownable{
         uint256 currentReserve = liquidityProtocol.getReserve(_liquidityAssetPair.asset);
         uint256 previousReserve = _liquidityAssetPair.latestReserve;
 
-        //TODO: safemath
-        uint256 difference = previousReserve - currentReserve;
-        uint256 percentage = (difference / previousReserve) * 100;
+        uint256 difference = previousReserve.sub(currentReserve);
+        uint256 percentage = (difference.div(previousReserve)).mul(100);
         return percentage;
     }
 
@@ -182,9 +182,17 @@ contract LiquidityProtocolInsurance is Ownable{
     }
 
     function isPolicyActive(InsurancePolicy memory _policy) private view returns(bool){
-        bool isCurrent = block.timestamp >= _policy.coverageData.startDate  && block.timestamp <= _policy.coverageData.endDate;
-        bool hasBeenPaid = _policy.trackingData.paid;
+        bool isCurrent = isPolicyCurrent(_policy);
+        bool hasBeenPaid = isPolicyPaid(_policy);
         return isCurrent && !hasBeenPaid;
+    }
+
+    function isPolicyCurrent(InsurancePolicy memory _policy) private view returns(bool) {
+        return block.timestamp >= _policy.coverageData.startDate  && block.timestamp <= _policy.coverageData.endDate;
+    }
+
+    function isPolicyPaid(InsurancePolicy memory _policy) private pure returns(bool) {
+        return _policy.trackingData.paid;
     }
 
     function equals(LiquidityAssetPair memory _first, LiquidityAssetPair memory _second) private pure returns (bool) {
