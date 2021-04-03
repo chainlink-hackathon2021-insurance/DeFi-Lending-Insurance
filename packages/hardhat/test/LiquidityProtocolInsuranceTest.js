@@ -44,30 +44,15 @@ describe("Liquidity Protocol Insurance App", () => {
           latestReserve: 0
         }
       };
-      
-      await expect(insuranceContract.connect(addr1).registerInsurancePolicy(invalidCoverageData)).to.be.revertedWith("Liquidity Protocol address not found in the whitelist");
+
+      await expect(insuranceContract.connect(addr1).registerInsurancePolicy(invalidCoverageData))
+        .to.be.revertedWith("Liquidity Protocol address not found in the whitelist");
     });
+
+    it("Should create and register an insurance policy", async () => {
+      
+    });
+
   });
 
 });
-
-/*describe("My Dapp", function () {
-  let myContract;
-
-  describe("YourContract", function () {
-    it("Should deploy YourContract", async function () {
-      const YourContract = await ethers.getContractFactory("YourContract");
-
-      myContract = await YourContract.deploy();
-    });
-
-    describe("setPurpose()", function () {
-      it("Should be able to set a new purpose", async function () {
-        const newPurpose = "Test Purpose";
-
-        await myContract.setPurpose(newPurpose);
-        expect(await myContract.purpose()).to.equal(newPurpose);
-      });
-    });
-  });
-});*/
