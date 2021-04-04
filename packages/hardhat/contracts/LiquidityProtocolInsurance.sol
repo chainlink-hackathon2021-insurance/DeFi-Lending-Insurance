@@ -138,6 +138,23 @@ contract LiquidityProtocolInsurance is Ownable{
         return isPolicyActive(policy);
     }
 
+    function getInsurancePolicies() public view returns (InsurancePolicy[] memory){
+        return getInsurancePoliciesByBeneficiary(msg.sender);
+    }
+
+    function getInsurancePolicyIds() public view returns (uint[] memory) {
+        return insurancePolicyOwnership[msg.sender];
+    }
+
+    function getInsurancePoliciesByBeneficiary(address beneficiary) public view returns (InsurancePolicy[] memory){
+        uint[] storage insurancePolicyIds = insurancePolicyOwnership[beneficiary];
+        InsurancePolicy[] memory result = new InsurancePolicy[](insurancePolicyIds.length);
+        for(uint i = 0; i < insurancePolicyIds.length; i++) {
+            result[i] = insurancePolicies[insurancePolicyIds[i]];
+        }
+        return result;
+    }
+
     //CALLED EXTERNALLY
     function checkParameterOne() public onlyOwner returns(bool) {
         bool shouldMakeTransaction = false;

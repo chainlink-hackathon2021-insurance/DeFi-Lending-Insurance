@@ -10,13 +10,12 @@ import "../interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 contract LiquidityProtocolMock is ILiquidityProtocol {
 
     ReserveTokenMock private reserveToken;
-
+    
     mapping(address => uint256) public reserves;
-    mapping(address => address) public reserveTokenToUnderlyingToken;
-    mapping(address => address) public underlyingTokenToReserveToken;
 
-    constructor () {
-        reserveToken = new ReserveTokenMock();
+    constructor (address _reserveTokenAddress) {
+        reserveToken = ReserveTokenMock(_reserveTokenAddress);
+        reserveToken.faucet(address(this), 2000 ether);
     }
 
     function getReserve(address asset) override external view returns (uint256){
@@ -24,14 +23,12 @@ contract LiquidityProtocolMock is ILiquidityProtocol {
     }
 
     function lockTokens(address asset, uint256 amount) override external {
-        IERC20(asset).transferFrom(msg.sender, address(this), amount);
         reserves[asset] += amount;
-        //Assumption: This contract has a considerable amount 
         reserveToken.transfer(msg.sender, amount);
     }
     
     function getReserveTokenAddress(address asset) override external view returns (address){
-        return underlyingTokenToReserveToken[asset];
+        return address(reserveToken);
     }
     
     function unlockTokens(address asset, uint256 amount) override external{

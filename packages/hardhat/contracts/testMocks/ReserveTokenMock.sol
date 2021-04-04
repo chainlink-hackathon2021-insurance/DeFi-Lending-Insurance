@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 //Test Reserve Token Mock contract used for unit tests. DO NOT deploy this!
 contract ReserveTokenMock is ERC20, Ownable {
     constructor() ERC20("PDADI Test Token", "TPDADI"){
-        _mint(msg.sender, 2000 ether);
     }
 
     function faucet(address to, uint256 amount) external {
