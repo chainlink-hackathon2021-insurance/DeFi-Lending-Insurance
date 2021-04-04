@@ -10,6 +10,8 @@ import "./interfaces/uniswap/IUniswapRouter.sol";
 import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 
 contract LiquidityProtocolInsurance is Ownable{
+    uint256 constant public MAXIMUM_RESERVE_DECREASE_PERCENTAGE = 70;
+
     using SafeMath for uint256;
 
     struct CoverageData{
@@ -80,12 +82,7 @@ contract LiquidityProtocolInsurance is Ownable{
     function registerInsurancePolicy(CoverageData memory _coverageData) public payable validateLiquidityProtocolAddress(_coverageData.liquidityAssetData.liquidityProtocol) 
     returns (uint256) {
         ILiquidityProtocol liquidityProtocol = ILiquidityProtocol(_coverageData.liquidityAssetData.liquidityProtocol);
-        uint256 reserve = liquidityProtocol.getReserve(_coverageData.liquidityAssetData.asset);
-
-        LiquidityAssetPair memory pair = LiquidityAssetPair({ liquidityProtocol: _coverageData.liquidityAssetData.liquidityProtocol, 
-            asset: _coverageData.liquidityAssetData.asset, latestReserve: reserve});
-      
-        uint liquidityAssetPairIdentifier = registerLiquidityAssetPair(pair);
+        
 
         TrackingData memory trackingData = TrackingData({parameterOne: false, parameterTwo: false, paid: false});
         InsurancePolicy memory policy = InsurancePolicy({
@@ -101,8 +98,16 @@ contract LiquidityProtocolInsurance is Ownable{
         //Put tokens in liquidity pool
         liquidityProtocol.lockTokens(policy.coverageData.liquidityAssetData.asset, policy.coverageData.amountInsured);
         
-        //Return liquidity tokens to the user - 10% which will remain in the contract
+        //Update latest reserve value
+        uint256 reserve = liquidityProtocol.getReserve(_coverageData.liquidityAssetData.asset);
         
+        LiquidityAssetPair memory pair = LiquidityAssetPair({ liquidityProtocol: _coverageData.liquidityAssetData.liquidityProtocol, 
+            asset: _coverageData.liquidityAssetData.asset, latestReserve: reserve});
+      
+        uint liquidityAssetPairIdentifier = registerLiquidityAssetPair(pair);
+
+
+        //Return liquidity tokens to the user - 10% which will remain in the contract
         IERC20 reserveAsset = IERC20(liquidityProtocol.getReserveTokenAddress(policy.coverageData.liquidityAssetData.asset));
         uint256 amountToKeep = (policy.coverageData.amountInsured * 10) / 100;
         reserveAsset.transfer(msg.sender,  policy.coverageData.amountInsured - amountToKeep);
@@ -155,13 +160,22 @@ contract LiquidityProtocolInsurance is Ownable{
         return result;
     }
 
-    //CALLED EXTERNALLY
-    function checkParameterOne() public onlyOwner returns(bool) {
+    function checkStatusForSignificantReserveDecrease() public view returns (bool){
         bool shouldMakeTransaction = false;
         for(uint liquidityAssetPairsIdx = 0; liquidityAssetPairsIdx < liquidityAssetPairs.length; liquidityAssetPairsIdx++){
-            uint256 decreasePercentage = calculateReserveDecreasePercentage(liquidityAssetPairs[liquidityAssetPairsIdx]);
-            if(decreasePercentage > 70){
+            uint256 decreasePercentage = calculateReserveDecreasePercentage(liquidityAssetPairs[liquidityAssetPairsIdx]);            
+            if(decreasePercentage >= MAXIMUM_RESERVE_DECREASE_PERCENTAGE){
                 shouldMakeTransaction = true;
+            }
+        }
+        return shouldMakeTransaction;
+    }
+
+    //CALLED EXTERNALLY
+    function checkForSignificantReserveDecreaseAndPay() public onlyOwner {
+        for(uint liquidityAssetPairsIdx = 0; liquidityAssetPairsIdx < liquidityAssetPairs.length; liquidityAssetPairsIdx++){
+            uint256 decreasePercentage = calculateReserveDecreasePercentage(liquidityAssetPairs[liquidityAssetPairsIdx]);
+            if(decreasePercentage >= MAXIMUM_RESERVE_DECREASE_PERCENTAGE){
                 for(uint256 insurancePoliciesIdx = 0; insurancePoliciesIdx < liquidityAssetPairToInsurancePolicies[liquidityAssetPairsIdx].length; insurancePoliciesIdx++){
                     uint256 insurancePolicyIdentifier = liquidityAssetPairToInsurancePolicies[liquidityAssetPairsIdx][insurancePoliciesIdx];
                     InsurancePolicy memory policy = insurancePolicies[insurancePolicyIdentifier];
@@ -174,16 +188,18 @@ contract LiquidityProtocolInsurance is Ownable{
                 }
             }
         }
-        return shouldMakeTransaction;
     }
 
     function calculateReserveDecreasePercentage(LiquidityAssetPair memory _liquidityAssetPair) private view returns(uint256) {
+        uint256 percentage = 0;
         ILiquidityProtocol liquidityProtocol = ILiquidityProtocol(_liquidityAssetPair.liquidityProtocol);
         uint256 currentReserve = liquidityProtocol.getReserve(_liquidityAssetPair.asset);
         uint256 previousReserve = _liquidityAssetPair.latestReserve;
+        if(currentReserve < previousReserve){
+            uint256 difference = previousReserve.sub(currentReserve);
+            percentage = difference.mul(100).div(previousReserve);
+        }
 
-        uint256 difference = previousReserve.sub(currentReserve);
-        uint256 percentage = (difference.div(previousReserve)).mul(100);
         return percentage;
     }
 

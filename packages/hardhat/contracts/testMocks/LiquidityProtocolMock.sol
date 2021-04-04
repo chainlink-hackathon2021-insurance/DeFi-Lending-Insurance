@@ -36,4 +36,8 @@ contract LiquidityProtocolMock is ILiquidityProtocol {
         IERC20(asset).transfer(msg.sender, amount);
     }
 
+    function setReserve(address asset, uint256 amount) external {
+        reserves[asset] = amount;
+    }
+
 }
