@@ -8,9 +8,9 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 
 import "./interfaces/uniswap/IUniswapRouter.sol";
 import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
+import "@chainlink/contracts/src/v0.7/interfaces/AggregatorV3Interface.sol";
 
 contract LiquidityProtocolInsurance is Ownable{
-    uint256 constant public MAXIMUM_RESERVE_DECREASE_PERCENTAGE = 70;
 
     using SafeMath for uint256;
 
@@ -51,7 +51,11 @@ contract LiquidityProtocolInsurance is Ownable{
     );
 
     IUniswapRouter public uniswap;
-    
+    AggregatorV3Interface internal tusdReserveFeed;
+    AggregatorV3Interface internal tusdSupplyFeed;
+
+    uint256 constant public MAXIMUM_RESERVE_DECREASE_PERCENTAGE = 75;
+
     address[] public liquidityProtocolImplementations;
     InsurancePolicy[] public insurancePolicies;
     LiquidityAssetPair[] public liquidityAssetPairs;
@@ -62,10 +66,16 @@ contract LiquidityProtocolInsurance is Ownable{
     uint256 public liquidity;
     address public insuranceLiquidityTokenAddress;
 
-    constructor(address[] memory _liquidityProtocolImplementations, address _insuranceLiquidityTokenAddress, address _uniswapRouterAddress) {
+    constructor(address[] memory _liquidityProtocolImplementations, 
+                address _insuranceLiquidityTokenAddress, 
+                address _uniswapRouterAddress, 
+                address _tusdSupplyFeedAddress, 
+                address _tusdReserveFeedAddress) {
         liquidityProtocolImplementations = _liquidityProtocolImplementations;
         insuranceLiquidityTokenAddress = _insuranceLiquidityTokenAddress;
         uniswap = IUniswapRouter(_uniswapRouterAddress);
+        tusdReserveFeed = AggregatorV3Interface(_tusdReserveFeedAddress);
+        tusdSupplyFeed = AggregatorV3Interface(_tusdSupplyFeedAddress);
     }
 
     modifier validateLiquidityProtocolAddress(address _liquidityProtocolAddress) {
@@ -160,6 +170,17 @@ contract LiquidityProtocolInsurance is Ownable{
         return result;
     }
 
+    
+
+    // ADMIN FUNCTIONS
+    function setTUSDSupplyFeed(address _tusdSupplyFeedAddress) external onlyOwner{
+        tusdSupplyFeed = AggregatorV3Interface(_tusdSupplyFeedAddress);
+    }
+
+    function setTUSDReserveFeed(address _tusdReserveFeedAddress) external onlyOwner {
+        tusdReserveFeed = AggregatorV3Interface(_tusdReserveFeedAddress);
+    }
+
     function checkStatusForSignificantReserveDecrease() public view returns (bool){
         bool shouldMakeTransaction = false;
         for(uint liquidityAssetPairsIdx = 0; liquidityAssetPairsIdx < liquidityAssetPairs.length; liquidityAssetPairsIdx++){
@@ -171,7 +192,24 @@ contract LiquidityProtocolInsurance is Ownable{
         return shouldMakeTransaction;
     }
 
-    //CALLED EXTERNALLY
+    function checkStatusForStableTUSDPeg() public view returns (bool) {
+        bool shouldMakeTransaction = false;
+        int supply; 
+        int reserve;
+        int percentage = 0;
+        ( , supply, , , ) = tusdSupplyFeed.latestRoundData();
+        ( , reserve, , , ) = tusdReserveFeed.latestRoundData();
+        if(reserve < supply) { 
+            int difference = supply  - reserve;
+            percentage = (difference * 100) / supply;
+            if(percentage > 5){
+                shouldMakeTransaction = true;
+            }
+        }
+        return shouldMakeTransaction;
+    }
+
+    // CALLED EXTERNALLY    
     function checkForSignificantReserveDecreaseAndPay() public onlyOwner {
         for(uint liquidityAssetPairsIdx = 0; liquidityAssetPairsIdx < liquidityAssetPairs.length; liquidityAssetPairsIdx++){
             uint256 decreasePercentage = calculateReserveDecreasePercentage(liquidityAssetPairs[liquidityAssetPairsIdx]);
@@ -179,6 +217,7 @@ contract LiquidityProtocolInsurance is Ownable{
                 for(uint256 insurancePoliciesIdx = 0; insurancePoliciesIdx < liquidityAssetPairToInsurancePolicies[liquidityAssetPairsIdx].length; insurancePoliciesIdx++){
                     uint256 insurancePolicyIdentifier = liquidityAssetPairToInsurancePolicies[liquidityAssetPairsIdx][insurancePoliciesIdx];
                     InsurancePolicy memory policy = insurancePolicies[insurancePolicyIdentifier];
+
                     if(isPolicyActive(policy)){
                         //Pay the beneficiary
                         IERC20 stableLiquidityToken = IERC20(insuranceLiquidityTokenAddress);
@@ -190,6 +229,34 @@ contract LiquidityProtocolInsurance is Ownable{
         }
     }
 
+    function checkForStableTUSDPegAndPay() external onlyOwner {
+        int supply; 
+        int reserve;
+        int percentage = 0;
+        ( , supply, , , ) = tusdSupplyFeed.latestRoundData();
+        ( , reserve, , , ) = tusdReserveFeed.latestRoundData();
+        if(reserve < supply) { 
+            int difference = supply  - reserve;
+            percentage = (difference * 100) / supply;
+            if(percentage > 5){
+                payInsurancePolicies();
+            }
+        }
+    }
+
+    function payInsurancePolicies() private {
+        for(uint256 insurancePoliciesIdentifier = 0; insurancePoliciesIdentifier < insurancePolicies.length; insurancePoliciesIdentifier++){
+            InsurancePolicy memory policy = insurancePolicies[insurancePoliciesIdentifier];
+            if(isPolicyActive(policy)){
+                //Pay the beneficiary
+                IERC20 stableLiquidityToken = IERC20(insuranceLiquidityTokenAddress);
+                stableLiquidityToken.transfer(policy.coverageData.beneficiary, policy.coverageData.amountInsured);
+                emit Payout(policy.coverageData.beneficiary, insurancePoliciesIdentifier, policy.coverageData.amountInsured);
+            }
+        }
+    }
+
+    // PRIVATE FUNCTIONS
     function calculateReserveDecreasePercentage(LiquidityAssetPair memory _liquidityAssetPair) private view returns(uint256) {
         uint256 percentage = 0;
         ILiquidityProtocol liquidityProtocol = ILiquidityProtocol(_liquidityAssetPair.liquidityProtocol);
@@ -202,7 +269,6 @@ contract LiquidityProtocolInsurance is Ownable{
 
         return percentage;
     }
-
     function registerLiquidityAssetPair(LiquidityAssetPair memory _liquidityAssetPair) private returns (uint256) {
         for(uint i = 0; i < liquidityAssetPairs.length; i++) {
             if(equals(_liquidityAssetPair, liquidityAssetPairs[i])){
