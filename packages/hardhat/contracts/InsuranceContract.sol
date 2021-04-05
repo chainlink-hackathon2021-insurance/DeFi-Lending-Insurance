@@ -14,7 +14,7 @@ contract InsuranceContract is Ownable {
     uint256 public startDate;
     uint256 public endDate;
     uint256 public amountInsured;
-    bool paid;
+    bool public paid;
     IERC20 internal asset;
     IERC20 internal reserveToken;
     
@@ -45,10 +45,13 @@ contract InsuranceContract is Ownable {
     }
 
     function withdraw() external onlyOwner returns (uint256) {
-        liquidityProtocol.unlockTokens(address(asset), reserveToken.balanceOf(address(this)));
-        uint256 amountToWithdraw = asset.balanceOf(address(this));
-        asset.transfer(beneficiary, amountToWithdraw);
-        paid = true;
+        uint256 amountToWithdraw = 0;
+        if(!paid){
+            liquidityProtocol.unlockTokens(address(asset), reserveToken.balanceOf(address(this)));
+            amountToWithdraw = asset.balanceOf(address(this));
+            asset.transfer(beneficiary, amountToWithdraw);
+            paid = true;
+        }
         return amountToWithdraw;
     }
 

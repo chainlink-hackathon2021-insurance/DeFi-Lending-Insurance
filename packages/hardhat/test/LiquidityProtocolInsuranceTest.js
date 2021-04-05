@@ -6,9 +6,9 @@ const { addDays } = require('../utils');
 use(solidity);
 
 describe("Liquidity Protocol Insurance App", () => {
-  let mainInsuranceContract;
+  let mainInsuranceContract, mainInsuranceContractUnstableReserve;
   let liquidityProtocolMock, tusdMock, reserveTokenMock;
-  let tusdReserveMock, tusdSupplyMock;
+  let tusdReserveMock, tusdSupplyMock, tusdReserveUnstableMock;
   let owner, addr1;
 
   let validCoverageData;
@@ -23,6 +23,7 @@ describe("Liquidity Protocol Insurance App", () => {
     reserveTokenMock = await ReserveTokenMock.deploy();
     tusdReserveMock = await TUSDReserveFeedMock.deploy(8, '32450358663000000');
     tusdSupplyMock = await TUSDSupplyFeedMock.deploy(8,   '32326049998805076');
+    tusdReserveUnstableMock = await TUSDReserveFeedMock.deploy(8, '21326049998805076');
 
     const LiquidityProtocolMock = await ethers.getContractFactory("LiquidityProtocolMock");
     const LiquidityProtocolInsurance = await ethers.getContractFactory("LiquidityProtocolInsurance");
@@ -33,7 +34,10 @@ describe("Liquidity Protocol Insurance App", () => {
                                                                 tusdMock.address,
                                                                 tusdSupplyMock.address,
                                                                 tusdReserveMock.address);
-
+    mainInsuranceContractUnstableReserve = await LiquidityProtocolInsurance.deploy(liquidityProtocolImplementations,
+                                                                  tusdMock.address,
+                                                                  tusdSupplyMock.address,
+                                                                  tusdReserveUnstableMock.address);
     [owner, addr1] = await ethers.getSigners();
     validCoverageData = {
       startDate: Math.floor(Date.now() / 1000),
@@ -41,6 +45,13 @@ describe("Liquidity Protocol Insurance App", () => {
       amountInsured: 2000,
       liquidityProtocol: liquidityProtocolMock.address,
     };
+    await tusdMock.faucet(addr1.address, 2000);
+    await tusdMock.connect(addr1).approve(mainInsuranceContract.address, 2000);
+    await mainInsuranceContract.connect(addr1).registerInsurancePolicy(validCoverageData.startDate, 
+      validCoverageData.endDate, 
+      validCoverageData.amountInsured, 
+      validCoverageData.liquidityProtocol);
+
 
   })
 
@@ -66,14 +77,6 @@ describe("Liquidity Protocol Insurance App", () => {
       const amountInsured = 2000;
       const expectedReserveTokensToHaveInContract = amountInsured * 0.9;
       const expectedReserveTokensToKeepInMainContract = amountInsured * 0.1;
-
-      await tusdMock.faucet(addr1.address, 2000);
-      await tusdMock.connect(addr1).approve(mainInsuranceContract.address, 2000);
-   
-      await mainInsuranceContract.connect(addr1).registerInsurancePolicy(validCoverageData.startDate, 
-                                                                     validCoverageData.endDate, 
-                                                                     validCoverageData.amountInsured, 
-                                                                     validCoverageData.liquidityProtocol);
     
       const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
       const contract = await ethers.getContractAt("InsuranceContract", insuranceContractAddress);
@@ -82,23 +85,30 @@ describe("Liquidity Protocol Insurance App", () => {
       expect(await reserveTokenMock.balanceOf(mainInsuranceContract.address)).to.be.equal(expectedReserveTokensToKeepInMainContract);
     });
 
+    it("Should allow a user to withdraw their funds", async () => {
+
+      const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
+      await mainInsuranceContract.connect(addr1).withdraw(insuranceContractAddress);
+      expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured - (validCoverageData.amountInsured  * 0.1)); 
+
+    });
+
+    it("Should NOT allow a user to withdraw other user's funds", async () => {
+      const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
+      await expect(mainInsuranceContract.withdraw(insuranceContractAddress)).to.be.revertedWith("only a beneficiary can trigger a withdrawal");
+
+    });
+
   });
 
- describe("Payouts - Reserve (Parameter One)" , () => {
+ describe("Payouts - Liquidity Protocol Reserve (Parameter One)" , () => {
 
     it("Should NOT call pay function if not admin", async () => {
       await expect(mainInsuranceContract.connect(addr1).checkForSignificantReserveDecreaseAndPay())
         .to.be.revertedWith("Ownable: caller is not the owner");
     });
 
-    it("Should NOT payout if there is NOT a significant decrease of the liquidity pool (reserve)", async () => {
-      await tusdMock.faucet(addr1.address, 2000);
-      await tusdMock.connect(addr1).approve(mainInsuranceContract.address, 2000);
-      await mainInsuranceContract.connect(addr1).registerInsurancePolicy(validCoverageData.startDate, 
-        validCoverageData.endDate, 
-        validCoverageData.amountInsured, 
-        validCoverageData.liquidityProtocol);
-
+    it("Should NOT pay out if there is NOT a significant decrease of the liquidity pool (reserve)", async () => {
       const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
 
       expect(await mainInsuranceContract.checkStatusForSignificantReserveDecrease()).to.be.false;
@@ -109,15 +119,8 @@ describe("Liquidity Protocol Insurance App", () => {
       expect(insuranceContractTUSDBalanceBefore).to.be.equal(insuranceContractTUSDBalanceAfter);
     });
 
-    it("Should payout if there is a significant decrease of the liquidity pool (reserve)", async () => {
-      await tusdMock.faucet(addr1.address, 2000);
-      await tusdMock.connect(addr1).approve(mainInsuranceContract.address, 2000);
-      await mainInsuranceContract.connect(addr1).registerInsurancePolicy(validCoverageData.startDate, 
-        validCoverageData.endDate, 
-        validCoverageData.amountInsured, 
-        validCoverageData.liquidityProtocol);
-      
-        expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(0); 
+    it("Should pay out if there is a significant decrease of the liquidity pool (reserve)", async () => {
+      expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(0); 
       const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
       
       const currentTUSDInLiquidityProtocolMockReserve = await liquidityProtocolMock.getReserve(tusdMock.address);
@@ -130,6 +133,35 @@ describe("Liquidity Protocol Insurance App", () => {
       
       expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured - (validCoverageData.amountInsured  * 0.1)); 
 
+    });
+
+  });
+
+  describe("Payouts - Proof of Reserve", () => {
+    it("Should NOT pay out if PoR / PoS is STABLE", async () => {
+      const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
+
+      expect(await mainInsuranceContract.checkStatusForUnstableTUSDPeg()).to.be.false;
+      const insuranceContractTUSDBalanceBefore = await tusdMock.balanceOf(insuranceContractAddress);
+      expect(insuranceContractTUSDBalanceBefore).to.be.equal(0);
+      await mainInsuranceContract.checkForUnstableTUSDPegAndPay();
+      const insuranceContractTUSDBalanceAfter = await tusdMock.balanceOf(insuranceContractAddress);
+      expect(insuranceContractTUSDBalanceBefore).to.be.equal(insuranceContractTUSDBalanceAfter);
+    });
+
+    it("Should pay out if PoR / PoS is UNSTABLE", async () => {
+      await tusdMock.faucet(addr1.address, 2000);
+      await tusdMock.connect(addr1).approve(mainInsuranceContractUnstableReserve.address, 2000);
+      await mainInsuranceContractUnstableReserve.connect(addr1).registerInsurancePolicy(validCoverageData.startDate, 
+      validCoverageData.endDate, 
+      validCoverageData.amountInsured, 
+      validCoverageData.liquidityProtocol);
+
+      const insuranceContractAddress = await mainInsuranceContractUnstableReserve.insuranceContractOwnerships(addr1.address, 0);
+      expect(await mainInsuranceContractUnstableReserve.checkStatusForUnstableTUSDPeg()).to.be.true;      
+      await mainInsuranceContractUnstableReserve.checkForUnstableTUSDPegAndPay();         
+      expect(await tusdMock.balanceOf(insuranceContractAddress)).to.be.equal(0); 
+      expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured - (validCoverageData.amountInsured  * 0.1));              
     });
 
   });

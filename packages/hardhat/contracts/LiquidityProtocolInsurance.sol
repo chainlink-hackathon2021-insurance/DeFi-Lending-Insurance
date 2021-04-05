@@ -10,7 +10,6 @@ import "@chainlink/contracts/src/v0.7/interfaces/AggregatorV3Interface.sol";
 import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 import "./InsuranceContract.sol";
 
-
 contract LiquidityProtocolInsurance is Ownable{
 
     using SafeMath for uint256;
@@ -133,7 +132,7 @@ contract LiquidityProtocolInsurance is Ownable{
         return shouldMakeTransaction;
     }
 
-    function checkStatusForStableTUSDPeg() public view returns (bool) {
+    function checkStatusForUnstableTUSDPeg() public view returns (bool) {
         bool shouldMakeTransaction = false;
         int supply; 
         int reserve;
@@ -150,6 +149,12 @@ contract LiquidityProtocolInsurance is Ownable{
         return shouldMakeTransaction;
     }
 
+    function withdraw(address _insuranceContractAddress) external {
+        InsuranceContract insuranceContract = InsuranceContract(_insuranceContractAddress);
+        require(msg.sender == insuranceContract.beneficiary(), "only a beneficiary can trigger a withdrawal");
+        insuranceContract.withdraw();
+    }
+
     // CALLED EXTERNALLY    
     function checkForSignificantReserveDecreaseAndPay() public onlyOwner {
         for(uint liquidityAssetPairsIdx = 0; liquidityAssetPairsIdx < liquidityAssetPairs.length; liquidityAssetPairsIdx++){
@@ -163,13 +168,14 @@ contract LiquidityProtocolInsurance is Ownable{
         }
     }
 
-    function checkForStableTUSDPegAndPay() external onlyOwner {
+    function checkForUnstableTUSDPegAndPay() external onlyOwner {                       
         int supply; 
         int reserve;
         int percentage = 0;
         ( , supply, , , ) = tusdSupplyFeed.latestRoundData();
         ( , reserve, , , ) = tusdReserveFeed.latestRoundData();
         if(reserve < supply) { 
+
             int difference = supply  - reserve;
             percentage = (difference * 100) / supply;
             if(percentage > 5){
@@ -182,8 +188,8 @@ contract LiquidityProtocolInsurance is Ownable{
 
     // PRIVATE FUNCTIONS
     function payAllInsuranceContracts() private {
-        for(uint256 insuranceContractsIdentifier = 0; insuranceContractsIdentifier < insuranceContracts.length; insuranceContractsIdentifier++){
-            payInsuranceContract(insuranceContracts[insuranceContractsIdentifier]);
+        for(uint256 i = 0; i < insuranceContracts.length; i++){     
+            payInsuranceContract(insuranceContracts[i]);
         }
     }
     
@@ -192,7 +198,9 @@ contract LiquidityProtocolInsurance is Ownable{
         if(insuranceContract.isPolicyActive()){
             //Pay the beneficiary
             uint256 withdrawnAmount = insuranceContract.withdraw();
-            emit Payout(insuranceContract.beneficiary(), _insuranceContractAddress, withdrawnAmount);
+            if(withdrawnAmount > 0){
+                emit Payout(insuranceContract.beneficiary(), _insuranceContractAddress, withdrawnAmount);
+            }
         }
     }
 
@@ -208,6 +216,7 @@ contract LiquidityProtocolInsurance is Ownable{
 
         return percentage;
     }
+
     function registerLiquidityAssetPair(LiquidityAssetPair memory _liquidityAssetPair) private returns (uint256) {
         for(uint i = 0; i < liquidityAssetPairs.length; i++) {
             if(equals(_liquidityAssetPair, liquidityAssetPairs[i])){
