@@ -5,75 +5,51 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-
-import "./interfaces/uniswap/IUniswapRouter.sol";
-import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 import "@chainlink/contracts/src/v0.7/interfaces/AggregatorV3Interface.sol";
+
+import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
+import "./InsuranceContract.sol";
+
 
 contract LiquidityProtocolInsurance is Ownable{
 
     using SafeMath for uint256;
 
-    struct CoverageData{
-        address beneficiary;
-        uint256 startDate;
-        uint256 endDate;
-        uint256 amountInsured;
-        LiquidityAssetPair liquidityAssetData;
-    }
-
     struct LiquidityAssetPair{
-        address asset;
         address liquidityProtocol;
         uint256 latestReserve;
     }
 
-    struct TrackingData {
-        bool parameterOne;
-        bool parameterTwo;
-        bool paid;
-    }
-
-    struct InsurancePolicy {
-       CoverageData coverageData;
-       TrackingData trackingData;
-    }
-
     event InsurancePolicyCreation (
         address indexed beneficiary,
-        uint256 indexed insuranceIdentifier
+        address indexed insuranceContractAddress
     );
     
     event Payout (
         address indexed beneficiary,
-        uint256 indexed insuranceIdentifier,
+        address indexed insuranceContractAddress,
         uint256 amountPaid
     );
 
-    IUniswapRouter public uniswap;
     AggregatorV3Interface internal tusdReserveFeed;
     AggregatorV3Interface internal tusdSupplyFeed;
 
+    address public tusdTokenAddress; 
     uint256 constant public MAXIMUM_RESERVE_DECREASE_PERCENTAGE = 75;
 
     address[] public liquidityProtocolImplementations;
-    InsurancePolicy[] public insurancePolicies;
+    address[] public insuranceContracts;
     LiquidityAssetPair[] public liquidityAssetPairs;
     
-    mapping(address => uint[]) public insurancePolicyOwnership;
-    mapping(uint => uint[]) public liquidityAssetPairToInsurancePolicies;
-
-    uint256 public liquidity;
-    address public insuranceLiquidityTokenAddress;
+    mapping(address => address[]) public insuranceContractOwnerships;
+    mapping(uint => address[]) public liquidityAssetPairToInsuranceContracts;
 
     constructor(address[] memory _liquidityProtocolImplementations, 
-                address _insuranceLiquidityTokenAddress, 
-                address _uniswapRouterAddress, 
+                address _tusdTokenAddress,
                 address _tusdSupplyFeedAddress, 
                 address _tusdReserveFeedAddress) {
         liquidityProtocolImplementations = _liquidityProtocolImplementations;
-        insuranceLiquidityTokenAddress = _insuranceLiquidityTokenAddress;
-        uniswap = IUniswapRouter(_uniswapRouterAddress);
+        tusdTokenAddress = _tusdTokenAddress;
         tusdReserveFeed = AggregatorV3Interface(_tusdReserveFeedAddress);
         tusdSupplyFeed = AggregatorV3Interface(_tusdSupplyFeedAddress);
     }
@@ -89,91 +65,56 @@ contract LiquidityProtocolInsurance is Ownable{
         _;
     }
 
-    function registerInsurancePolicy(CoverageData memory _coverageData) public payable validateLiquidityProtocolAddress(_coverageData.liquidityAssetData.liquidityProtocol) 
-    returns (uint256) {
-        ILiquidityProtocol liquidityProtocol = ILiquidityProtocol(_coverageData.liquidityAssetData.liquidityProtocol);
+    function registerInsurancePolicy(
+        uint256 _startDate,
+        uint256 _endDate,
+        uint256 _amountInsured,
+        address _liquidityProtocol) 
+    public validateLiquidityProtocolAddress(_liquidityProtocol) {
+        //Create insurance contract
+        InsuranceContract insuranceContract = new InsuranceContract(
+                _startDate,
+                _endDate,
+                _amountInsured,
+                _liquidityProtocol,
+                msg.sender, 
+                tusdTokenAddress,
+                address(this));
         
+        ILiquidityProtocol liquidityProtocol = ILiquidityProtocol(_liquidityProtocol);
 
-        TrackingData memory trackingData = TrackingData({parameterOne: false, parameterTwo: false, paid: false});
-        InsurancePolicy memory policy = InsurancePolicy({
-            coverageData: _coverageData,
-            trackingData: trackingData
-        });
-        
-        
         //Send tokens to liquidity protocol interface contract
-        IERC20 asset = IERC20(policy.coverageData.liquidityAssetData.asset);
-        asset.transferFrom(msg.sender, policy.coverageData.liquidityAssetData.liquidityProtocol, policy.coverageData.amountInsured);
+        IERC20 asset = IERC20(tusdTokenAddress);
+        asset.transferFrom(msg.sender, _liquidityProtocol, _amountInsured);
         
         //Put tokens in liquidity pool
-        liquidityProtocol.lockTokens(policy.coverageData.liquidityAssetData.asset, policy.coverageData.amountInsured);
+        liquidityProtocol.lockTokens(tusdTokenAddress, _amountInsured);
         
         //Update latest reserve value
-        uint256 reserve = liquidityProtocol.getReserve(_coverageData.liquidityAssetData.asset);
-        
-        LiquidityAssetPair memory pair = LiquidityAssetPair({ liquidityProtocol: _coverageData.liquidityAssetData.liquidityProtocol, 
-            asset: _coverageData.liquidityAssetData.asset, latestReserve: reserve});
-      
+        uint256 reserve = liquidityProtocol.getReserve(tusdTokenAddress);
+    
+        LiquidityAssetPair memory pair = LiquidityAssetPair({ liquidityProtocol: _liquidityProtocol, latestReserve: reserve});
         uint liquidityAssetPairIdentifier = registerLiquidityAssetPair(pair);
 
-
-        //Return liquidity tokens to the user - 10% which will remain in the contract
-        IERC20 reserveAsset = IERC20(liquidityProtocol.getReserveTokenAddress(policy.coverageData.liquidityAssetData.asset));
-        uint256 amountToKeep = (policy.coverageData.amountInsured * 10) / 100;
-        reserveAsset.transfer(msg.sender,  policy.coverageData.amountInsured - amountToKeep);
+        //Send liquidity tokens to the Insurance Contract - 10% which will remain in this contract
+        IERC20 reserveAsset = IERC20(liquidityProtocol.getReserveTokenAddress(tusdTokenAddress));
+        uint256 amountToKeep = (_amountInsured * 10) / 100;        
+        reserveAsset.transfer(address(insuranceContract), _amountInsured - amountToKeep);
         
-        //convert reserve tokens to underlying token (aTUSD -> TUSD)
-        liquidityProtocol.unlockTokens(policy.coverageData.liquidityAssetData.asset, amountToKeep);
-        //exchange tokens to stablecoin (TUSD -> DAI)
-        uint256 amountIn = asset.balanceOf(address(this));
-        address[] memory path = new address[](2);
-        path[0] = policy.coverageData.liquidityAssetData.asset;
-        path[1] = insuranceLiquidityTokenAddress;
-        asset.approve(address(uniswap), amountIn);
-        uniswap.swapExactTokensForTokens(
-            amountIn, 
-            uniswap.getAmountsOut(amountIn, path)[0], 
-            path, 
-            address(this), 
-            block.timestamp);
-        //add tokens to insurance liquidity
         
-        insurancePolicies.push(policy);
-        uint256 insurancePolicyIdentifier = insurancePolicies.length - 1;
-        insurancePolicyOwnership[msg.sender].push(insurancePolicyIdentifier);
-        
-        liquidityAssetPairToInsurancePolicies[liquidityAssetPairIdentifier].push(insurancePolicyIdentifier);
+        //Register address of Insurance Contract on chain
+        address insuranceContractAddress = address(insuranceContract);
 
-        emit InsurancePolicyCreation(msg.sender, insurancePolicyIdentifier);
-        return insurancePolicyIdentifier;
+        insuranceContracts.push(insuranceContractAddress);
+        insuranceContractOwnerships[msg.sender].push(insuranceContractAddress);
+        liquidityAssetPairToInsuranceContracts[liquidityAssetPairIdentifier].push(insuranceContractAddress);
+
+        emit InsurancePolicyCreation(msg.sender, insuranceContractAddress);
     }
-
-    function isPolicyActive(uint256 _identifier) public view returns(bool){
-        InsurancePolicy storage policy = insurancePolicies[_identifier];
-        return isPolicyActive(policy);
-    }
-
-    function getInsurancePolicies() public view returns (InsurancePolicy[] memory){
-        return getInsurancePoliciesByBeneficiary(msg.sender);
-    }
-
-    function getInsurancePolicyIds() public view returns (uint[] memory) {
-        return insurancePolicyOwnership[msg.sender];
-    }
-
-    function getInsurancePoliciesByBeneficiary(address beneficiary) public view returns (InsurancePolicy[] memory){
-        uint[] storage insurancePolicyIds = insurancePolicyOwnership[beneficiary];
-        InsurancePolicy[] memory result = new InsurancePolicy[](insurancePolicyIds.length);
-        for(uint i = 0; i < insurancePolicyIds.length; i++) {
-            result[i] = insurancePolicies[insurancePolicyIds[i]];
-        }
-        return result;
-    }
-
-    
+   
 
     // ADMIN FUNCTIONS
-    function setTUSDSupplyFeed(address _tusdSupplyFeedAddress) external onlyOwner{
+    function setTUSDSupplyFeed(address _tusdSupplyFeedAddress) external onlyOwner {
         tusdSupplyFeed = AggregatorV3Interface(_tusdSupplyFeedAddress);
     }
 
@@ -214,16 +155,9 @@ contract LiquidityProtocolInsurance is Ownable{
         for(uint liquidityAssetPairsIdx = 0; liquidityAssetPairsIdx < liquidityAssetPairs.length; liquidityAssetPairsIdx++){
             uint256 decreasePercentage = calculateReserveDecreasePercentage(liquidityAssetPairs[liquidityAssetPairsIdx]);
             if(decreasePercentage >= MAXIMUM_RESERVE_DECREASE_PERCENTAGE){
-                for(uint256 insurancePoliciesIdx = 0; insurancePoliciesIdx < liquidityAssetPairToInsurancePolicies[liquidityAssetPairsIdx].length; insurancePoliciesIdx++){
-                    uint256 insurancePolicyIdentifier = liquidityAssetPairToInsurancePolicies[liquidityAssetPairsIdx][insurancePoliciesIdx];
-                    InsurancePolicy memory policy = insurancePolicies[insurancePolicyIdentifier];
-
-                    if(isPolicyActive(policy)){
-                        //Pay the beneficiary
-                        IERC20 stableLiquidityToken = IERC20(insuranceLiquidityTokenAddress);
-                        stableLiquidityToken.transfer(policy.coverageData.beneficiary, policy.coverageData.amountInsured);
-                        emit Payout(policy.coverageData.beneficiary, insurancePolicyIdentifier, policy.coverageData.amountInsured);
-                    }
+                for(uint256 insuranceContractsIdx = 0; insuranceContractsIdx < liquidityAssetPairToInsuranceContracts[liquidityAssetPairsIdx].length; insuranceContractsIdx++){
+                    address insuranceContractAddress = liquidityAssetPairToInsuranceContracts[liquidityAssetPairsIdx][insuranceContractsIdx];
+                    payInsuranceContract(insuranceContractAddress);
                 }
             }
         }
@@ -239,28 +173,33 @@ contract LiquidityProtocolInsurance is Ownable{
             int difference = supply  - reserve;
             percentage = (difference * 100) / supply;
             if(percentage > 5){
-                payInsurancePolicies();
+                //Question: Should we pay in a different currency? (WETH, DAI)
+                payAllInsuranceContracts();
             }
         }
     }
 
-    function payInsurancePolicies() private {
-        for(uint256 insurancePoliciesIdentifier = 0; insurancePoliciesIdentifier < insurancePolicies.length; insurancePoliciesIdentifier++){
-            InsurancePolicy memory policy = insurancePolicies[insurancePoliciesIdentifier];
-            if(isPolicyActive(policy)){
-                //Pay the beneficiary
-                IERC20 stableLiquidityToken = IERC20(insuranceLiquidityTokenAddress);
-                stableLiquidityToken.transfer(policy.coverageData.beneficiary, policy.coverageData.amountInsured);
-                emit Payout(policy.coverageData.beneficiary, insurancePoliciesIdentifier, policy.coverageData.amountInsured);
-            }
-        }
-    }
 
     // PRIVATE FUNCTIONS
+    function payAllInsuranceContracts() private {
+        for(uint256 insuranceContractsIdentifier = 0; insuranceContractsIdentifier < insuranceContracts.length; insuranceContractsIdentifier++){
+            payInsuranceContract(insuranceContracts[insuranceContractsIdentifier]);
+        }
+    }
+    
+    function payInsuranceContract(address _insuranceContractAddress) private {
+        InsuranceContract insuranceContract = InsuranceContract(_insuranceContractAddress);
+        if(insuranceContract.isPolicyActive()){
+            //Pay the beneficiary
+            uint256 withdrawnAmount = insuranceContract.withdraw();
+            emit Payout(insuranceContract.beneficiary(), _insuranceContractAddress, withdrawnAmount);
+        }
+    }
+
     function calculateReserveDecreasePercentage(LiquidityAssetPair memory _liquidityAssetPair) private view returns(uint256) {
         uint256 percentage = 0;
         ILiquidityProtocol liquidityProtocol = ILiquidityProtocol(_liquidityAssetPair.liquidityProtocol);
-        uint256 currentReserve = liquidityProtocol.getReserve(_liquidityAssetPair.asset);
+        uint256 currentReserve = liquidityProtocol.getReserve(tusdTokenAddress);
         uint256 previousReserve = _liquidityAssetPair.latestReserve;
         if(currentReserve < previousReserve){
             uint256 difference = previousReserve.sub(currentReserve);
@@ -278,24 +217,10 @@ contract LiquidityProtocolInsurance is Ownable{
         liquidityAssetPairs.push(_liquidityAssetPair);       
         uint256 liquidityAssetPairIdentifier = liquidityAssetPairs.length - 1;
         return liquidityAssetPairIdentifier;
-    }
-
-    function isPolicyActive(InsurancePolicy memory _policy) private view returns(bool){
-        bool isCurrent = isPolicyCurrent(_policy);
-        bool hasBeenPaid = isPolicyPaid(_policy);
-        return isCurrent && !hasBeenPaid;
-    }
-
-    function isPolicyCurrent(InsurancePolicy memory _policy) private view returns(bool) {
-        return block.timestamp >= _policy.coverageData.startDate  && block.timestamp <= _policy.coverageData.endDate;
-    }
-
-    function isPolicyPaid(InsurancePolicy memory _policy) private pure returns(bool) {
-        return _policy.trackingData.paid;
-    }
+    }  
 
     function equals(LiquidityAssetPair memory _first, LiquidityAssetPair memory _second) private pure returns (bool) {
-        return(keccak256(abi.encodePacked(_first.asset, _first.liquidityProtocol)) == keccak256(abi.encodePacked(_second.asset, _second.liquidityProtocol)));
+        return _first.liquidityProtocol == _second.liquidityProtocol;
     }
 
 }
