@@ -16,8 +16,8 @@ describe("Liquidity Protocol Insurance App", () => {
   beforeEach(async () => {
     const TUSDMock = await ethers.getContractFactory("TUSDMock");
     const ReserveTokenMock = await ethers.getContractFactory("ReserveTokenMock");
-    const TUSDReserveFeedMock = await ethers.getContractFactory("MockV3Aggregator");
-    const TUSDSupplyFeedMock = await ethers.getContractFactory("MockV3Aggregator");
+    const TUSDReserveFeedMock = await ethers.getContractFactory("MockAggregator");
+    const TUSDSupplyFeedMock = await ethers.getContractFactory("MockAggregator");
 
     tusdMock = await TUSDMock.deploy();
     reserveTokenMock = await ReserveTokenMock.deploy();

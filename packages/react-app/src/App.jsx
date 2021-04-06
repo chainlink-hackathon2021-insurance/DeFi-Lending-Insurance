@@ -36,7 +36,7 @@ import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants"
 
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['kovan']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
@@ -198,10 +198,10 @@ function App(props) {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">LiquidityProtocolInsurance</Link>
           </Menu.Item>
-          <Menu.Item key="/mainnetdai">
-            <Link onClick={()=>{setRoute("/mainnetdai")}} to="/mainnetdai">Mainnet DAI</Link>
+          <Menu.Item key="/mockTUSD">
+            <Link onClick={()=>{setRoute("/mockTUSD")}} to="/mockTUSD">Mock TUSD (local)</Link>
           </Menu.Item>
         </Menu>
 
@@ -214,9 +214,9 @@ function App(props) {
             */}
 
             <Contract
-              name="AavePlayground"
+              name="LiquidityProtocolInsurance"
               signer={userProvider.getSigner()}
-              provider={localProvider}
+              provider={userProvider}
               address={address}
               blockExplorer={blockExplorer}
             />
@@ -244,15 +244,14 @@ function App(props) {
             */ }
           </Route>
           
-          <Route path="/mainnetdai">
+          <Route path="/mockTUSD">
             <Contract
-              name="DAI"
-              customContract={mainnetDAIContract}
-              signer={userProvider.getSigner()}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer={"https://etherscan.io/"}
-            />
+                name="TUSDMock"
+                signer={userProvider.getSigner()}
+                provider={localProvider}
+                address={address}
+                blockExplorer={blockExplorer}
+              />  
           </Route>
         </Switch>
       </BrowserRouter>

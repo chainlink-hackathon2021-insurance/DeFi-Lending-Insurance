@@ -17,4 +17,8 @@ contract TUSDMock is ERC20{
         _burn(account, amount);
     }
 
+    function decimals() override public view returns (uint8) {
+        return 8;
+    }
+
 }

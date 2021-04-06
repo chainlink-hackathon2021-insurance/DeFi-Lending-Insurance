@@ -5,10 +5,9 @@ import { PageHeader } from "antd";
 
 export default function Header() {
   return (
-    <a href="https://github.com/austintgriffith/scaffold-eth" target="_blank" rel="noopener noreferrer">
+    <a href="/" rel="noopener noreferrer">
       <PageHeader
-        title="🏗 scaffold-eth"
-        subTitle="forkable Ethereum dev stack focused on fast product iteration"
+        title="Parametric Digital Asset Risk Management"
         style={{ cursor: "pointer" }}
       />
     </a>

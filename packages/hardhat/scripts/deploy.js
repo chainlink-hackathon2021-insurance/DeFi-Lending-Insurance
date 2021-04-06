@@ -6,10 +6,46 @@ const { utils } = require("ethers");
 const R = require("ramda");
 
 const main = async () => {
+  let targetNetwork = process.env.HARDHAT_NETWORK || config.defaultNetwork
+  console.log("\n\n 📡 Deploying... to "+targetNetwork+"\n");
 
-  console.log("\n\n 📡 Deploying...\n");
+  if(targetNetwork === "localhost"){
+    const tusdMock = await deploy("TUSDMock");
+    const reserveTokenMock = await deploy("ReserveTokenMock");
+    const tusdReserveMock = await deploy("MockAggregator", [8, '32450358663000000']);
+    const tusdSupplyMock = await deploy("MockAggregator", [8, '32326049998805076']);
+    const liquidityProtocolMock = await deploy("LiquidityProtocolMock", [reserveTokenMock.address]);
 
-  const aavePlayground = await deploy("AavePlayground") // <-- add in constructor args like line 19 vvvv
+    const liquidityProtocolInsurance = await deploy("LiquidityProtocolInsurance", [
+                                                                                    [liquidityProtocolMock.address],
+                                                                                    tusdMock.address,
+                                                                                    tusdSupplyMock.address,
+                                                                                    tusdReserveMock.address
+                                                                                  ]); 
+  }
+  else if(targetNetwork === "kovan"){
+    const tusdAddress = "0x016750AC630F711882812f24Dba6c95b9D35856d";
+    const tusdSupplyFeedAddress = "0xC3749f644c988Dc9AA9461D6Cb1d8A5E1d452D99";
+    const tusdReserveFeedAddress = "0xdD6Dbd1861971455C20d5bd00DeA4DDE704f3554";
+    const aaveAddresses = {
+      lendingPool :  "0xE0fBa4Fc209b4948668006B2bE61711b7f465bAe",
+      protocolDataProvider : "0x3c73A5E5785cAC854D468F727c606C07488a29D6"
+    }
+
+    const aaveLiquidityProtocol = await deploy("AaveLiquidityProtocol", [aaveAddresses.protocolDataProvider, aaveAddresses.lendingPool]);
+    const reserveTokenMock = await deploy("ReserveTokenMock");
+    const liquidityProtocolMock = await deploy("LiquidityProtocolMock", [reserveTokenMock.address]);
+
+    const liquidityProtocolInsurance = await deploy("LiquidityProtocolInsurance", [
+                                                                                    [liquidityProtocolMock.address, 
+                                                                                    aaveLiquidityProtocol.address],
+                                                                                    tusdAddress,
+                                                                                    tusdSupplyFeedAddress,
+                                                                                    tusdReserveFeedAddress
+                                                                                  ]); 
+
+  }
+                                                                                
 
   //const yourContract = await ethers.getContractAt('YourContract', "0xaAC799eC2d00C013f1F11c37E654e59B0429DF6A") //<-- if you want to instantiate a version of a contract at a specific address!
   //const secondContract = await deploy("SecondContract")

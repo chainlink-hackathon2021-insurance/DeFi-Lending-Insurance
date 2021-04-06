@@ -4,7 +4,7 @@ pragma solidity 0.7.6;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "./ReserveTokenMock.sol";
-import "../interfaces/liquidityProtocol/ILiquidityProtocol.sol";
+import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 
 //Test Mock contract used for unit tests. DO NOT deploy this!
 contract LiquidityProtocolMock is ILiquidityProtocol {
