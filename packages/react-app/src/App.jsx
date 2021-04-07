@@ -11,8 +11,7 @@ import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useC
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-//import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph } from "./views"
+import { RegistrationSuccess, SmartContractDetails } from "./views"
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 /*
@@ -203,16 +202,14 @@ function App(props) {
           <Menu.Item key="/mockTUSD">
             <Link onClick={()=>{setRoute("/mockTUSD")}} to="/mockTUSD">Mock TUSD (local)</Link>
           </Menu.Item>
+          <Menu.Item key="/registration-success">
+            <Link onClick={()=>{setRoute("/registration-success")}} to="/registration-success">Start Now</Link>
+          </Menu.Item>
         </Menu>
 
         <Switch>
           <Route exact path="/">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-
+            
             <Contract
               name="LiquidityProtocolInsurance"
               signer={userProvider.getSigner()}
@@ -220,28 +217,6 @@ function App(props) {
               address={address}
               blockExplorer={blockExplorer}
             />
-
-
-            { /* uncomment for a second contract:
-            <Contract
-              name="SecondContract"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
-            */ }
-
-            { /* Uncomment to display and interact with an external contract (DAI on mainnet):
-            <Contract
-              name="DAI"
-              customContract={mainnetDAIContract}
-              signer={userProvider.getSigner()}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
-            */ }
           </Route>
           
           <Route path="/mockTUSD">
@@ -253,6 +228,14 @@ function App(props) {
                 blockExplorer={blockExplorer}
               />  
           </Route>
+
+          <Route path="/registration-success">
+            <RegistrationSuccess address={address} setRoute={setRoute} />
+          </Route>
+          <Route path="/smart-contract-details">
+            <SmartContractDetails address={address} />
+          </Route>
+
         </Switch>
       </BrowserRouter>
 
@@ -277,29 +260,6 @@ function App(props) {
 
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-         <Row align="middle" gutter={[4, 4]}>
-           <Col span={8}>
-             <Ramp price={price} address={address} networks={NETWORKS}/>
-           </Col>
-
-           <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-             <GasGauge gasPrice={gasPrice} />
-           </Col>
-           <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-             <Button
-               onClick={() => {
-                 window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-               }}
-               size="large"
-               shape="round"
-             >
-               <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                 💬
-               </span>
-               Support
-             </Button>
-           </Col>
-         </Row>
 
          <Row align="middle" gutter={[4, 4]}>
            <Col span={24}>
