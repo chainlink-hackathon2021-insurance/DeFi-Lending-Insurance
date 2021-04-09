@@ -110,7 +110,10 @@ contract LiquidityProtocolInsurance is Ownable{
 
         emit InsurancePolicyCreation(msg.sender, insuranceContractAddress);
     }
-   
+
+    function getInsurancePolicyAddresses() public view returns(address[] memory) {
+        return insuranceContractOwnerships[msg.sender];
+    }
 
     // ADMIN FUNCTIONS
     function setTUSDSupplyFeed(address _tusdSupplyFeedAddress) external onlyOwner {

@@ -6,7 +6,7 @@ import { ContractSteps } from "../components";
 import { Row, Col, Button, Form, Select } from "antd";
 import picture from './images/registration-success.png';
 
-export default function RegistrationSuccess({address, setRoute}) {
+export default function RegistrationSuccess({address, setRoute, liquidityProtocol, setLiquidityProtocol}) {
     const history = useHistory();
 
     const { Option } = Select;
@@ -57,9 +57,9 @@ export default function RegistrationSuccess({address, setRoute}) {
                         label="Selected Platform"
                         name="platform"
                     >
-                         <Select defaultValue="aave">
-                            <Option value="aave">Aave</Option>
-                            <Option value="mock">Mock</Option>
+                         <Select onChange={(val) => {setLiquidityProtocol(val)}} defaultValue={liquidityProtocol ? liquidityProtocol : "aave" }>
+                            <Option value="Aave">Aave</Option>
+                            <Option value="Mock">Mock</Option>
                         </Select>
                     </Form.Item>
 
@@ -67,8 +67,8 @@ export default function RegistrationSuccess({address, setRoute}) {
                         label="Selected Product"
                         name="product"
                     >
-                         <Select defaultValue="aave" disabled>
-                            <Option value="aave">TUSD</Option>
+                         <Select defaultValue="TUSD" disabled>
+                            <Option value="TUSD">TUSD</Option>
                         </Select>
                     </Form.Item>
                 </Form>

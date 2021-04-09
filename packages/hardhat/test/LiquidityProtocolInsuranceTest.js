@@ -85,6 +85,11 @@ describe("Liquidity Protocol Insurance App", () => {
       expect(await reserveTokenMock.balanceOf(mainInsuranceContract.address)).to.be.equal(expectedReserveTokensToKeepInMainContract);
     });
 
+    it("Should get insurance policies by user", async () => {
+      const insurancePolicies = await mainInsuranceContract.connect(addr1).getInsurancePolicyAddresses();
+      expect(insurancePolicies.length).to.be.equal(1);
+    });
+
     it("Should allow a user to withdraw their funds", async () => {
 
       const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);

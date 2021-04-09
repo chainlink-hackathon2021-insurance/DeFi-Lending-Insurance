@@ -11,7 +11,7 @@ import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useC
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-import { RegistrationSuccess, SmartContractDetails } from "./views"
+import { Dashboard, DebugPanel, RegistrationSuccess, ReviewAndPurchase, SmartContractDetails } from "./views"
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 /*
@@ -187,6 +187,16 @@ function App(props) {
     )
   }
 
+  /* APPLICATION SPECIFIC STATES START HERE */
+
+  const liquidityProtocolToAddressMap = {
+    "Aave":  "0x95401dc811bb5740090279Ba06cfA8fcF6113778",
+    "Mock" : "0x95401dc811bb5740090279Ba06cfA8fcF6113778",
+  }
+  
+  const [ depositAmount, setDepositAmount ] = useState(100);
+  const [ liquidityProtocol, setLiquidityProtocol ] = useState("Aave");
+  /* APPLICATION SPECIFIC STATES END HERE */
   return (
     <div className="App">
 
@@ -197,19 +207,24 @@ function App(props) {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">LiquidityProtocolInsurance</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Home</Link>
           </Menu.Item>
-          <Menu.Item key="/mockTUSD">
-            <Link onClick={()=>{setRoute("/mockTUSD")}} to="/mockTUSD">Mock TUSD (local)</Link>
+          <Menu.Item key="/debug">
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">Debug Panel</Link>
           </Menu.Item>
           <Menu.Item key="/registration-success">
             <Link onClick={()=>{setRoute("/registration-success")}} to="/registration-success">Start Now</Link>
           </Menu.Item>
+          <Menu.Item key="/dashboard">
+            <Link onClick={()=>{setRoute("/dashboard")}} to="/dashboard">Dashboard</Link>
+          </Menu.Item>
         </Menu>
 
         <Switch>
-          <Route exact path="/">
-            
+          <Route exact path="/debug">
+            <DebugPanel />
+          </Route>
+          <Route exact path="/debug/liquidityProtocolInsurance">
             <Contract
               name="LiquidityProtocolInsurance"
               signer={userProvider.getSigner()}
@@ -218,8 +233,7 @@ function App(props) {
               blockExplorer={blockExplorer}
             />
           </Route>
-          
-          <Route path="/mockTUSD">
+          <Route path="/debug/mockTUSD">
             <Contract
                 name="TUSDMock"
                 signer={userProvider.getSigner()}
@@ -228,12 +242,56 @@ function App(props) {
                 blockExplorer={blockExplorer}
               />  
           </Route>
+          <Route path="/debug/liquidityProtocolMock">
+            <Contract
+                name="LiquidityProtocolMock"
+                signer={userProvider.getSigner()}
+                provider={localProvider}
+                address={address}
+                blockExplorer={blockExplorer}
+              />  
+          </Route>
+          <Route path="/debug/ReserveTokenMock">
+            <Contract
+                name="ReserveTokenMock"
+                signer={userProvider.getSigner()}
+                provider={localProvider}
+                address={address}
+                blockExplorer={blockExplorer}
+              />  
+          </Route>
 
           <Route path="/registration-success">
-            <RegistrationSuccess address={address} setRoute={setRoute} />
+            <RegistrationSuccess 
+              address={address} 
+              setRoute={setRoute}
+              liquidityProtocol={liquidityProtocol}
+              setLiquidityProtocol={setLiquidityProtocol}
+              />
           </Route>
           <Route path="/smart-contract-details">
-            <SmartContractDetails address={address} />
+            <SmartContractDetails 
+              depositAmount={depositAmount}
+              setDepositAmount={setDepositAmount}
+              setRoute={setRoute} />
+          </Route>
+          <Route path="/review-and-purchase">
+            <ReviewAndPurchase
+              liquidityProtocol={liquidityProtocol}
+              depositAmount={depositAmount}
+              liquidityProtocolToAddressMap={liquidityProtocolToAddressMap}
+              writeContracts={writeContracts}
+              tx={tx}
+              setRoute={setRoute} />
+          </Route>
+          <Route path="/dashboard">
+            <Dashboard
+              writeContracts={writeContracts}
+              provider={userProvider}
+              signer={userProvider.getSigner()}
+              address={address}
+              tx={tx}
+            />
           </Route>
 
         </Switch>

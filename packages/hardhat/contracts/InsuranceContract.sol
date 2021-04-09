@@ -4,22 +4,24 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 import "./LiquidityProtocolInsurance.sol";
 
 contract InsuranceContract is Ownable {
 
-    address public beneficiary;
     uint256 public startDate;
     uint256 public endDate;
     uint256 public amountInsured;
     bool public paid;
-    IERC20 internal asset;
-    IERC20 internal reserveToken;
+    IERC20 private asset;
+    ERC20 private reserveToken;
+    address public beneficiary;
+    address private reserveTokenAddress;
     
-    ILiquidityProtocol internal liquidityProtocol;
-    LiquidityProtocolInsurance internal liquidityProtocolInsurance;
+    ILiquidityProtocol private liquidityProtocol;
+    LiquidityProtocolInsurance private liquidityProtocolInsurance;
     
     constructor(
                 uint256 _startDate,
@@ -33,15 +35,26 @@ contract InsuranceContract is Ownable {
         endDate = _endDate;
         amountInsured = _amountInsured;
         beneficiary = _beneficiary;
-
         asset = IERC20(_assetAddress);
         liquidityProtocol = ILiquidityProtocol(_liquidityProtocol);
         liquidityProtocolInsurance = LiquidityProtocolInsurance(_liquidityProtocolInsuranceAddress);
         
-        address reserveTokenAddress = liquidityProtocol.getReserveTokenAddress(_assetAddress);
-        reserveToken = IERC20(reserveTokenAddress);
+        reserveTokenAddress = liquidityProtocol.getReserveTokenAddress(_assetAddress);
+        reserveToken = ERC20(reserveTokenAddress);
 
         transferOwnership(_liquidityProtocolInsuranceAddress);
+    }
+
+    function getReserveTokenBalance() external view returns(uint256) {
+        return reserveToken.balanceOf(address(this));
+    }
+
+    function getReserveTokenAddress() external view returns(address){
+        return reserveTokenAddress;
+    }
+
+    function getReserveTokenDenomination() external view returns(string memory){
+        return reserveToken.symbol();
     }
 
     function withdraw() external onlyOwner returns (uint256) {
@@ -60,7 +73,8 @@ contract InsuranceContract is Ownable {
     }
 
     function isPolicyActive() public view returns(bool){
-        bool isCurrent = isPolicyCurrent();
-        return isCurrent && !paid;
+        /*bool isCurrent = isPolicyCurrent();
+        return isCurrent && !paid;*/
+        return !paid;
     }
 }
