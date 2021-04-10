@@ -11,7 +11,7 @@ import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useC
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-import { Dashboard, DebugPanel, RegistrationSuccess, ReviewAndPurchase, SmartContractDetails } from "./views"
+import { Dashboard, DebugPanel, RegistrationSuccess, ReviewAndPurchase, SmartContractDetails, SuccessfullyConnected } from "./views"
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 /*
@@ -188,12 +188,38 @@ function App(props) {
   }
 
   /* APPLICATION SPECIFIC STATES START HERE */
+  const [liquidityProtocolToAddressMap, setLiquidityProtocolToAddressMap] = useState({});
+  const [tusdAddress, setTusdAddress] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    if(!readContracts) { return; }
+    if(targetNetwork.name === "localhost"){
+      setLiquidityProtocolToAddressMap({
+        "Aave":  readContracts.LiquidityProtocolMock.address,
+        "Mock" : readContracts.LiquidityProtocolMock.address,
+      })
+      setTusdAddress(readContracts.TUSDMock.address);
+    }
+    else if(targetNetwork.name === "kovan"){
+      setLiquidityProtocolToAddressMap({
+        "Aave":  readContracts.AaveLiquidityProtocol.address,
+        "Mock" : readContracts.LiquidityProtocolMock.address,
+      });
+      setTusdAddress("0x016750AC630F711882812f24Dba6c95b9D35856d");
+    }
+  }, [readContracts]);
 
-  const liquidityProtocolToAddressMap = {
-    "Aave":  "0x95401dc811bb5740090279Ba06cfA8fcF6113778",
-    "Mock" : "0x95401dc811bb5740090279Ba06cfA8fcF6113778",
-  }
-  
+  useEffect(() => {
+    if(!writeContracts) { return; }
+    const detectAdmin = async () => {
+        const admin = await writeContracts.LiquidityProtocolInsurance.owner();    
+        if(address === admin){
+          setIsAdmin(true);
+        }
+    }
+    detectAdmin();
+  }, [writeContracts]);
+   
   const [ depositAmount, setDepositAmount ] = useState(100);
   const [ liquidityProtocol, setLiquidityProtocol ] = useState("Aave");
   /* APPLICATION SPECIFIC STATES END HERE */
@@ -209,9 +235,11 @@ function App(props) {
           <Menu.Item key="/">
             <Link onClick={()=>{setRoute("/")}} to="/">Home</Link>
           </Menu.Item>
-          <Menu.Item key="/debug">
-            <Link onClick={()=>{setRoute("/debug")}} to="/debug">Debug Panel</Link>
-          </Menu.Item>
+          {isAdmin &&
+            <Menu.Item key="/debug">
+              <Link onClick={()=>{setRoute("/debug")}} to="/debug">Debug Panel</Link>
+            </Menu.Item>
+          }
           <Menu.Item key="/registration-success">
             <Link onClick={()=>{setRoute("/registration-success")}} to="/registration-success">Start Now</Link>
           </Menu.Item>
@@ -221,8 +249,14 @@ function App(props) {
         </Menu>
 
         <Switch>
+          
           <Route exact path="/debug">
-            <DebugPanel />
+            <DebugPanel
+              tx={tx}
+              readContracts={readContracts}
+              writeContracts={writeContracts}
+              tusdAddress={tusdAddress}
+            />
           </Route>
           <Route exact path="/debug/liquidityProtocolInsurance">
             <Contract
@@ -282,8 +316,16 @@ function App(props) {
               liquidityProtocolToAddressMap={liquidityProtocolToAddressMap}
               writeContracts={writeContracts}
               tx={tx}
-              setRoute={setRoute} />
+              tusdAddress={tusdAddress}
+              setRoute={setRoute}
+              signer={userProvider.getSigner()}
+              provider={userProvider}
+              />
           </Route>
+          <Route path="/successfully-connected">
+            <SuccessfullyConnected />
+          </Route>
+
           <Route path="/dashboard">
             <Dashboard
               writeContracts={writeContracts}

@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { ContractSteps } from "../components";
 import { Row, Col, Button, Form, Select } from "antd";
-import picture from './images/registration-success.png';
 
 export default function RegistrationSuccess({address, setRoute, liquidityProtocol, setLiquidityProtocol}) {
     const history = useHistory();
@@ -28,11 +27,11 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
       
   return (
       <div style={{border:"1px solid #cccccc", padding:16, width:"80%", margin:"auto",marginTop:64}}>
-        <h2>Registration Success</h2>
+        <h1>Registration Success</h1>
         <ContractSteps currentStep={1} />
         <Row style={{marginTop: "60px"}}>
             <Col span={12}>
-                <img src={picture} />
+                <img src={process.env.PUBLIC_URL + '/registration-success.png'} />
             </Col>
             <Col span={12}>
                 <h3>Connected Platforms</h3>

@@ -8,6 +8,7 @@ const R = require("ramda");
 const main = async () => {
   let targetNetwork = process.env.HARDHAT_NETWORK || config.defaultNetwork
   console.log("\n\n 📡 Deploying... to "+targetNetwork+"\n");
+  const [deployer] = await ethers.getSigners();
 
   if(targetNetwork === "localhost"){
     const tusdMock = await deploy("TUSDMock");
@@ -16,6 +17,9 @@ const main = async () => {
     const tusdSupplyMock = await deploy("MockAggregator", [8, '32326049998805076']);
     const liquidityProtocolMock = await deploy("LiquidityProtocolMock", [reserveTokenMock.address]);
 
+    //Add To Reserve
+    await tusdMock.faucet(liquidityProtocolMock.address, 1000);
+    await liquidityProtocolMock.setReserve(tusdMock.address, 1000);
     const liquidityProtocolInsurance = await deploy("LiquidityProtocolInsurance", [
                                                                                     [liquidityProtocolMock.address],
                                                                                     tusdMock.address,

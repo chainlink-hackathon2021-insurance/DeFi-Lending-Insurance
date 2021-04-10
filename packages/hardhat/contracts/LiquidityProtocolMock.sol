@@ -32,7 +32,7 @@ contract LiquidityProtocolMock is ILiquidityProtocol {
     }
     
     function unlockTokens(address asset, uint256 amount) override external{
-        reserveToken.burn(msg.sender, amount);
+        reserveToken.burn(address(this), amount);
         IERC20(asset).transfer(msg.sender, amount);
     }
 

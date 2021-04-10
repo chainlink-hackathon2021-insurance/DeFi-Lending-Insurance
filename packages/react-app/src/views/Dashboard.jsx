@@ -6,6 +6,8 @@ import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { ContractSteps } from "../components";
 import { Table, Space, Button } from "antd";
+import { parseEther, formatEther } from "@ethersproject/units";
+
 const { Column, ColumnGroup } = Table;
 
 export default function Dashboard({writeContracts, provider, address, tx, signer}) {
@@ -41,7 +43,7 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
             records.push({ 
                 key: contractIndex,
                 address: contractAddress,
-                balance: tokenBalance.toString(), 
+                balance: formatEther(tokenBalance.toString()), 
                 active: policyActive.toString(), 
                 denomination: denomination
             });
@@ -67,9 +69,11 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
                     key="action"
                     render={(text, record) => (
                         <Space size="middle">
-                        <Button type="primary" onClick={()=>{
-                            tx(writeContracts.LiquidityProtocolInsurance.withdraw(record.address));
-                        }}>Withdraw</Button>
+                        { record.active === "true" ? 
+                            <Button type="primary" onClick={()=>{
+                                tx(writeContracts.LiquidityProtocolInsurance.withdraw(record.address));
+                            }}>Withdraw</Button>
+                        : null }
                         </Space>
                     )}
                 />

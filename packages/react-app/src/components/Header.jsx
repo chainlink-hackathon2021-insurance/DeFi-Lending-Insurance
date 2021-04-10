@@ -5,11 +5,11 @@ import { PageHeader } from "antd";
 
 export default function Header() {
   return (
-    <a href="/" rel="noopener noreferrer">
+      <div>
       <PageHeader
         title="Parametric Digital Asset Risk Management"
-        style={{ cursor: "pointer" }}
+        avatar={{src: process.env.PUBLIC_URL + '/logo192.png', size: 50}}
       />
-    </a>
+      </div>
   );
 }

@@ -4,14 +4,13 @@ import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { ContractSteps } from "../components";
 import { Row, Col, Button, Form, Select, InputNumber, Divider } from "antd";
-import picture from './images/registration-success.png';
 
 export default function SmartContractDetails({setRoute, depositAmount, setDepositAmount}) {
     const history = useHistory();
    
   return (
       <div style={{border:"1px solid #cccccc", padding:16, width:"80%", margin:"auto", marginTop:64}}>
-        <h2>Smart Contract Details</h2>
+        <h1>Smart Contract Details</h1>
             <ContractSteps currentStep={2} />
             <div style={{margin: "auto", width: "70%"}}>
 

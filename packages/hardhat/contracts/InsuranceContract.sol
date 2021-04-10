@@ -60,7 +60,9 @@ contract InsuranceContract is Ownable {
     function withdraw() external onlyOwner returns (uint256) {
         uint256 amountToWithdraw = 0;
         if(!paid){
-            liquidityProtocol.unlockTokens(address(asset), reserveToken.balanceOf(address(this)));
+            uint256 amount = reserveToken.balanceOf(address(this));
+            reserveToken.transfer(address(liquidityProtocol), amount);
+            liquidityProtocol.unlockTokens(address(asset), amount);
             amountToWithdraw = asset.balanceOf(address(this));
             asset.transfer(beneficiary, amountToWithdraw);
             paid = true;

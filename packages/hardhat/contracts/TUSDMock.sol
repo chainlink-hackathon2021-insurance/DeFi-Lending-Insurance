@@ -18,7 +18,7 @@ contract TUSDMock is ERC20{
     }
 
     function decimals() override public view returns (uint8) {
-        return 8;
+        return 18;
     }
 
 }

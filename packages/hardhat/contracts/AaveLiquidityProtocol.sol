@@ -3,9 +3,9 @@ pragma solidity 0.7.6;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "../interfaces/liquidityProtocol/ILiquidityProtocol.sol";
-import "../interfaces/aave/IProtocolDataProvider.sol";
-import "../interfaces/aave/ILendingPool.sol";
+import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
+import "./interfaces/aave/IProtocolDataProvider.sol";
+import "./interfaces/aave/ILendingPool.sol";
 
 contract AaveLiquidityProtocol is ILiquidityProtocol {
     
