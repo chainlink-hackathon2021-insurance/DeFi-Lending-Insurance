@@ -15,7 +15,6 @@ contract LiquidityProtocolMock is ILiquidityProtocol {
 
     constructor (address _reserveTokenAddress) {
         reserveToken = ReserveTokenMock(_reserveTokenAddress);
-        reserveToken.faucet(address(this), 2000 ether);
     }
 
     function getReserve(address asset) override external view returns (uint256){
@@ -24,6 +23,7 @@ contract LiquidityProtocolMock is ILiquidityProtocol {
 
     function lockTokens(address asset, uint256 amount) override external {
         reserves[asset] += amount;
+        reserveToken.faucet(address(this), amount);
         reserveToken.transfer(msg.sender, amount);
     }
     
@@ -32,6 +32,7 @@ contract LiquidityProtocolMock is ILiquidityProtocol {
     }
     
     function unlockTokens(address asset, uint256 amount) override external{
+        reserves[asset] -= amount;
         reserveToken.burn(address(this), amount);
         IERC20(asset).transfer(msg.sender, amount);
     }

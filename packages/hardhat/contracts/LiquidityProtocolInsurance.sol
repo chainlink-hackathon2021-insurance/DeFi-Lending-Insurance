@@ -157,6 +157,11 @@ contract LiquidityProtocolInsurance is Ownable{
             LiquidityAssetPair storage pair = liquidityAssetPairs[liquidityAssetPairsIdx];
             uint256 decreasePercentage = calculateReserveDecreasePercentage(pair);
             if(decreasePercentage >= MAXIMUM_RESERVE_DECREASE_PERCENTAGE){
+                ILiquidityProtocol liquidityProtocol = ILiquidityProtocol(pair.liquidityProtocol);
+                address reserveTokenAddress  = liquidityProtocol.getReserveTokenAddress(tusdTokenAddress);
+                IERC20 reserveToken = IERC20(reserveTokenAddress);
+                reserveToken.transfer(pair.liquidityProtocol, reserveToken.balanceOf(address(this)));
+                liquidityProtocol.unlockTokens(tusdTokenAddress, reserveToken.balanceOf(address(this)));
                 for(uint256 insuranceContractsIdx = 0; insuranceContractsIdx < liquidityAssetPairToInsuranceContracts[liquidityAssetPairsIdx].length; insuranceContractsIdx++){
                     address insuranceContractAddress = liquidityAssetPairToInsuranceContracts[liquidityAssetPairsIdx][insuranceContractsIdx];
                     payInsuranceContract(insuranceContractAddress);
@@ -172,7 +177,6 @@ contract LiquidityProtocolInsurance is Ownable{
         ( , supply, , , ) = tusdSupplyFeed.latestRoundData();
         ( , reserve, , , ) = tusdReserveFeed.latestRoundData();
         if(reserve < supply) { 
-
             int difference = supply  - reserve;
             percentage = (difference * 100) / supply;
             if(percentage > 5){
@@ -195,6 +199,13 @@ contract LiquidityProtocolInsurance is Ownable{
         if(insuranceContract.isPolicyActive()){
             //Pay the beneficiary
             uint256 withdrawnAmount = insuranceContract.withdraw();
+            if(withdrawnAmount < insuranceContract.amountInsured()){
+                // The amount we are going to send to the beneficiary is lower than the amount insured! 
+                // We will take funds from the insurance to cover losses.
+                uint256 diff = insuranceContract.amountInsured() - withdrawnAmount;
+                IERC20(tusdTokenAddress).transfer(insuranceContract.beneficiary(), diff);
+                withdrawnAmount = diff;
+            }
             if(withdrawnAmount > 0){
                 emit Payout(insuranceContract.beneficiary(), _insuranceContractAddress, withdrawnAmount);
             }

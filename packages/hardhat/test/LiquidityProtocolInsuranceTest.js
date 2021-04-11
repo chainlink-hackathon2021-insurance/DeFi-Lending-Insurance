@@ -28,7 +28,6 @@ describe("Liquidity Protocol Insurance App", () => {
     const LiquidityProtocolMock = await ethers.getContractFactory("LiquidityProtocolMock");
     const LiquidityProtocolInsurance = await ethers.getContractFactory("LiquidityProtocolInsurance");
     liquidityProtocolMock = await LiquidityProtocolMock.deploy(reserveTokenMock.address);
-
     const liquidityProtocolImplementations = [liquidityProtocolMock.address];
     mainInsuranceContract = await LiquidityProtocolInsurance.deploy(liquidityProtocolImplementations,
                                                                 tusdMock.address,
@@ -38,6 +37,11 @@ describe("Liquidity Protocol Insurance App", () => {
                                                                   tusdMock.address,
                                                                   tusdSupplyMock.address,
                                                                   tusdReserveUnstableMock.address);
+    //Fund main insurance contracts with Mock TUSDs
+    tusdMock.faucet(mainInsuranceContract.address, 10000);
+    tusdMock.faucet(mainInsuranceContractUnstableReserve.address, 10000);
+    
+    
     [owner, addr1] = await ethers.getSigners();
     validCoverageData = {
       amountInsured: 2000,
@@ -128,7 +132,7 @@ describe("Liquidity Protocol Insurance App", () => {
       await mainInsuranceContract.checkForSignificantReserveDecreaseAndPay();
       expect(await tusdMock.balanceOf(insuranceContractAddress)).to.be.equal(0); 
       
-      expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured - (validCoverageData.amountInsured  * 0.1)); 
+      expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured); 
 
     });
 
@@ -157,7 +161,7 @@ describe("Liquidity Protocol Insurance App", () => {
       expect(await mainInsuranceContractUnstableReserve.checkStatusForUnstableTUSDPeg()).to.be.true;      
       await mainInsuranceContractUnstableReserve.checkForUnstableTUSDPegAndPay();         
       expect(await tusdMock.balanceOf(insuranceContractAddress)).to.be.equal(0); 
-      expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured - (validCoverageData.amountInsured  * 0.1));              
+      expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured);              
     });
 
   });
