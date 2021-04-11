@@ -36,7 +36,7 @@ const {  Content, Footer } = Layout;
 
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS['kovan']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
@@ -49,6 +49,7 @@ if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
 //
 // attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
+const scaffoldEthProvider = new JsonRpcProvider("https://rpc.scaffoldeth.io:48544")
 const mainnetInfura = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID)
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_I
 
@@ -66,7 +67,7 @@ const blockExplorer = targetNetwork.blockExplorer;
 
 function App(props) {
 
-  const mainnetProvider = mainnetInfura;
+  const mainnetProvider = (scaffoldEthProvider && scaffoldEthProvider._network) ? scaffoldEthProvider : mainnetInfura
   if(DEBUG) console.log("🌎 mainnetProvider",mainnetProvider)
 
   const [injectedProvider, setInjectedProvider] = useState(null);
@@ -111,20 +112,7 @@ function App(props) {
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
   */
-/*
-[
-  {
-    "path": "undraw_Security_on_ff2u 1.png",
-    "hash": "QmVFKEynyFEYC5y26ZmLHJkqEX9k33r7jQDdTUhmJcTACN",
-    "size": 16582
-  },
-  {
-    "path": "PDADI_V.0 8.png",
-    "hash": "QmPQCR3DxgJytoNRwKdudz6bnJbwhp4hRneXgnTb5dj817",
-    "size": 25482
-  }
-]
-*/
+
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
@@ -172,7 +160,7 @@ function App(props) {
     if(!writeContracts) { return; }
     if(targetNetwork.name === "localhost"){
       setLiquidityProtocolToAddressMap({
-        "Aave":  writeContracts.LiquidityProtocolMock.address,
+        "AAVE":  writeContracts.LiquidityProtocolMock.address,
         "Mock" : writeContracts.LiquidityProtocolMock.address,
       });
       setMockPoRPoSAddresses({
@@ -187,7 +175,7 @@ function App(props) {
     }
     else if(targetNetwork.name === "kovan"){
       setLiquidityProtocolToAddressMap({
-        "Aave":  writeContracts.AaveLiquidityProtocol.address,
+        "AAVE":  writeContracts.AaveLiquidityProtocol.address,
         "Mock" : writeContracts.LiquidityProtocolMock.address,
       });
       setMockPoRPoSAddresses({
@@ -214,7 +202,7 @@ function App(props) {
   }, [writeContracts]);
    
   const [ depositAmount, setDepositAmount ] = useState(100);
-  const [ liquidityProtocol, setLiquidityProtocol ] = useState("Aave");
+  const [ liquidityProtocol, setLiquidityProtocol ] = useState("AAVE");
   /* APPLICATION SPECIFIC STATES END HERE */
   return (
     <div className="App">
@@ -306,6 +294,7 @@ function App(props) {
             <Route path="/smart-contract-details">
               <SmartContractDetails 
                 depositAmount={depositAmount}
+                liquidityProtocol={liquidityProtocol}
                 setDepositAmount={setDepositAmount}
                 setRoute={setRoute} />
             </Route>

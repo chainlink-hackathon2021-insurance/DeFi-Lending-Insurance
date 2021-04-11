@@ -49,7 +49,7 @@ const main = async () => {
                                                                                     tusdAddress,
                                                                                     tusdSupplyFeedAddress,
                                                                                     tusdReserveFeedAddress,
-                                                                                    donee.address
+                                                                                    donee
                                                                                   ]); 
 
   }

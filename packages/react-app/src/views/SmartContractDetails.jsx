@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import { ContractSteps } from "../components";
 import { Row, Col, Button, Form, Select, InputNumber, Divider } from "antd";
 
-export default function SmartContractDetails({setRoute, depositAmount, setDepositAmount}) {
+export default function SmartContractDetails({setRoute, depositAmount, setDepositAmount, liquidityProtocol}) {
     const history = useHistory();
    
   return (
@@ -16,8 +16,8 @@ export default function SmartContractDetails({setRoute, depositAmount, setDeposi
 
             <Row>
                 <Col span={24} style={{textAlign:"left"}}>
-                    <h2>Coverage Type</h2>
-                    <p>Insurance coverage pays a pre-agreed upon amount directly to your wallet immediatly upon AAVE getting hacked.</p>
+                    <h2>Coverage Overview</h2>
+                    <p>Insurance coverage pays a pre-agreed upon amount directly to your wallet immediatly upon {liquidityProtocol} getting hacked.</p>
                 </Col>
             </Row>
             <Row style={{marginTop: "30px"}}> 
@@ -26,9 +26,7 @@ export default function SmartContractDetails({setRoute, depositAmount, setDeposi
                         style={{textAlign: "left"}}
                         layout="vertical"
                         name="basic"
-                        initialValues={{
-                            remember: true,
-                        }}
+                      
                         >
                         <Form.Item
                             label="Your Deposit Amount"
@@ -37,7 +35,7 @@ export default function SmartContractDetails({setRoute, depositAmount, setDeposi
                             <InputNumber 
                                 min="100" 
                                 size="middle"
-                                value={depositAmount}
+                                defaultValue={depositAmount}
                                 onChange={(val)=>{setDepositAmount(val)}} /> 
                         </Form.Item>
                        

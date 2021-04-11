@@ -59,7 +59,7 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
                         name="platform"
                     >
                          <Select onChange={(val) => {setLiquidityProtocol(val)}} defaultValue={liquidityProtocol ? liquidityProtocol : "aave" }>
-                            <Option value="Aave">Aave</Option>
+                            <Option value="AAVE">AAVE</Option>
                             <Option value="Mock">Mock Protocol</Option>
                         </Select>
                     </Form.Item>

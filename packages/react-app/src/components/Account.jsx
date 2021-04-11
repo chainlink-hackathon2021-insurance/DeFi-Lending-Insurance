@@ -49,6 +49,7 @@ export default function Account({
   loadWeb3Modal,
   logoutOfWeb3Modal,
   blockExplorer,
+  contract
 }) {
   const modalButtons = [];
   if (web3Modal) {
@@ -92,7 +93,8 @@ export default function Account({
 
   return (
     <div>
-      {userProvider && userProvider.connection.url !== "unknown:" && display }
+      
+      {((userProvider && userProvider.connection.url !== "unknown:") || contract) && display }
       {modalButtons}
     </div>
   );

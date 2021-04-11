@@ -6,11 +6,11 @@ export default function ContractSteps({currentStep}){
 
     return (
         <Steps progressDot current={currentStep}>
-            <Step title="Tutorial" />
+            <Step title={(<>Tutorial <br /> (Coming soon)</>)} />
             <Step title="Account Setup" />
             <Step title="Smart Contract Details" />
             <Step title="Review and Purchase" />
-            <Step title="Smart Contract Connected" />
+            <Step title="Smart Contract Status" />
         </Steps>
     )
 }

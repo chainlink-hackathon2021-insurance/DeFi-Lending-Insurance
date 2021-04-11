@@ -5,10 +5,10 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "./ReserveTokenMock.sol";
 import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
-
+import "@openzeppelin/contracts/math/SafeMath.sol";
 //Test Mock contract used for unit tests. DO NOT deploy this!
 contract LiquidityProtocolMock is ILiquidityProtocol {
-
+    using SafeMath for uint256;
     ReserveTokenMock private reserveToken;
     
     mapping(address => uint256) public reserves;
@@ -32,9 +32,14 @@ contract LiquidityProtocolMock is ILiquidityProtocol {
     }
     
     function unlockTokens(address asset, uint256 amount) override external{
+        if(reserves[asset] > amount){
         reserves[asset] -= amount;
         reserveToken.burn(address(this), amount);
         IERC20(asset).transfer(msg.sender, amount);
+        }
+        else{
+             reserves[asset] = 0;
+        }
     }
 
     function setReserve(address asset, uint256 amount) external {

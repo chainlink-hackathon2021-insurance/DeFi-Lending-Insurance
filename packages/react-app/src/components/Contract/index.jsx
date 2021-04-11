@@ -90,6 +90,7 @@ export default function Contract({ customContract, account, gasPrice, signer, pr
                 mainnetProvider={provider}
                 price={price}
                 blockExplorer={blockExplorer}
+                contract="true"
               />
               {account}
             </div>

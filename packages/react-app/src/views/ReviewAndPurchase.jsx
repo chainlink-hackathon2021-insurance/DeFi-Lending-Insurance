@@ -32,19 +32,27 @@ export default function ReviewAndPurchase({setRoute, depositAmount, liquidityPro
             </Row>
             <Row style={{marginTop: "30px"}}> 
                 <Col span={12}>
-                    <p>Your Deposit Amount</p>
-                    <p>{depositAmount} TUSD </p>
-                    <p>Selected Platform</p>
-                    <p>{liquidityProtocol}</p>
+                <Row>
+                    <Col span={12}>
+                        <p>Your Deposit Amount</p>
+                        <p>{depositAmount} TUSD </p>
+                    </Col>
+                    <Col span={12}>
+                        <p>Selected Platform</p>
+                        <p>{liquidityProtocol}</p>
+                    </Col>
+                </Row>
+                    
+                   
                 </Col>
             <Col span={12}></Col>
             </Row>
             <Divider />
 
-            <h2>Pay with a Percentage of your Earnings</h2>
-            <p>Delayed Payment is required to connect the wallet to the Smart Contract as a Service for improved risk management. </p>
-            <p>Subscription is good until cancelled</p>
-            <p>Would you like to automatically donate a 1% of your yearly profits to <a href="https://giveth.io/" target="_blank">giveth.io</a>? <Switch onChange={(val) => {setSupportsDonations(val)}} /></p>
+            <h3>Terms and Conditions</h3>
+            <p>An Upfront Payment is required to connect the wallet to the Smart Contract as a Service for improved risk management. Withdrawals or cancelations will take up to 48 hours due to limitations with the connected platform's "Available Liquidity." Subscription is good until cancelled.</p>
+            <p>Cryptocurrency allows for improved transparency when it comes to charitable donations and organizations. If you are interested in supporting social causes using blockchain, consider making a charitable donation to giveth.io using a portion of your profits. </p>
+            <p>Would you like to automatically donate a 1% of your yearly profits to giveth.io? <Switch onChange={(val) => {setSupportsDonations(val)}} /> <a href="https://giveth.io/" target="_blank">Click here to learn more.</a></p>
         </div>
         <Row style={{marginTop: "60px"}}>
             <Col span={8}>
@@ -57,7 +65,7 @@ export default function ReviewAndPurchase({setRoute, depositAmount, liquidityPro
                     if(result){
                         setApproved(true);
                     }
-                }}>Approve first!</Button>
+                }}>Pending Approval</Button>
                 <Button disabled={!approved} type="primary" onClick={async ()=>{
                     const result = await tx( writeContracts.LiquidityProtocolInsurance.registerInsurancePolicy(
                         parseEther(depositAmount.toString()), 
