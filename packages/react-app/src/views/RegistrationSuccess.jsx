@@ -27,7 +27,7 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
       
   return (
       <div style={{border:"1px solid #cccccc", padding:16, width:"80%", margin:"auto",marginTop:64}}>
-        <h1>Registration Success</h1>
+        <h1>Registration</h1>
         <ContractSteps currentStep={1} />
         <Row style={{marginTop: "60px"}}>
             <Col span={12}>
@@ -60,7 +60,7 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
                     >
                          <Select onChange={(val) => {setLiquidityProtocol(val)}} defaultValue={liquidityProtocol ? liquidityProtocol : "aave" }>
                             <Option value="Aave">Aave</Option>
-                            <Option value="Mock">Mock</Option>
+                            <Option value="Mock">Mock Protocol</Option>
                         </Select>
                     </Form.Item>
 

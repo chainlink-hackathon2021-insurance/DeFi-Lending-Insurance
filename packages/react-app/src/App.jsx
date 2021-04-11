@@ -3,17 +3,18 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu, Alert, Switch as SwitchD } from "antd";
+import { Row, Col, Button, Menu, Alert, Switch as SwitchD, Layout } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useBalance } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "./components";
+import { Header, Account, Faucet, Contract, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-import { Dashboard, DebugPanel, RegistrationSuccess, ReviewAndPurchase, SmartContractDetails, SuccessfullyConnected } from "./views"
-import { useThemeSwitcher } from "react-css-theme-switcher";
+import { Dashboard, DebugPanel, RegistrationSuccess, ReviewAndPurchase, SmartContractDetails, SuccessfullyConnected, Home } from "./views"
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
+const {  Content, Footer } = Layout;
+
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -217,160 +218,174 @@ function App(props) {
   /* APPLICATION SPECIFIC STATES END HERE */
   return (
     <div className="App">
-      
-      {/* ✏️ Edit the header and change the title to your project name */}
-      <Header networkName={userProvider.connection.url !== "unknown:" ? NETWORK(selectedChainId) : null} />
-      <BrowserRouter>
+      <Layout>
+        {/* ✏️ Edit the header and change the title to your project name */}
+        <Header networkName={userProvider.connection.url !== "unknown:" ? NETWORK(selectedChainId) : null} />
+        <BrowserRouter>
 
-        <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">Home</Link>
-          </Menu.Item>
-          {isAdmin &&
-            <Menu.Item key="/debug">
-              <Link onClick={()=>{setRoute("/debug")}} to="/debug">Debug Panel</Link>
+          <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
+            <Menu.Item key="/">
+              <Link onClick={()=>{setRoute("/")}} to="/">Home</Link>
             </Menu.Item>
-          }
-          <Menu.Item key="/registration-success">
-            <Link onClick={()=>{setRoute("/registration-success")}} to="/registration-success">Start Now</Link>
-          </Menu.Item>
-          <Menu.Item key="/dashboard">
-            <Link onClick={()=>{setRoute("/dashboard")}} to="/dashboard">Dashboard</Link>
-          </Menu.Item>
-        </Menu>
+            <Menu.Item key="/github">
+              <a href="https://github.com/chainlink-hackathon2021-insurance" target="_blank">GitHub</a>
+            </Menu.Item>
+            <Menu.Item key="/devpost">
+              <a href="https://devpost.com/software/rug-pull-ready-insurance" target="_blank">Devpost</a>
+            </Menu.Item>
+            <Menu.Item key="/registration-success">
+              <Link onClick={()=>{setRoute("/registration-success")}} to="/registration-success">Start Now</Link>
+            </Menu.Item>
+            <Menu.Item key="/dashboard">
+              <Link onClick={()=>{setRoute("/dashboard")}} to="/dashboard">Dashboard</Link>
+            </Menu.Item>
+          </Menu>
 
-        <Switch>
-          
-          <Route exact path="/debug">
-            <DebugPanel
-              tx={tx}
-              writeContracts={writeContracts}
-              tusdAddress={tusdAddress}
-              provider={userProvider}
-              mockPoRPoSAddresses={mockPoRPoSAddresses}
-              realPoRPoSAddresses={realPoRPoSAddresses}
-            />
-          </Route>
-          <Route exact path="/debug/liquidityProtocolInsurance">
-            <Contract
-              name="LiquidityProtocolInsurance"
-              signer={userProvider.getSigner()}
-              provider={userProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
-          </Route>
-          <Route path="/debug/mockTUSD">
-            <Contract
-                name="TUSDMock"
-                signer={userProvider.getSigner()}
-                provider={userProvider}
-                address={address}
-                blockExplorer={blockExplorer}
-              />  
-          </Route>
-          <Route path="/debug/liquidityProtocolMock">
-            <Contract
-                name="LiquidityProtocolMock"
-                signer={userProvider.getSigner()}
-                provider={userProvider}
-                address={address}
-                blockExplorer={blockExplorer}
-              />  
-          </Route>
-          <Route path="/debug/ReserveTokenMock">
-            <Contract
-                name="ReserveTokenMock"
-                signer={userProvider.getSigner()}
-                provider={userProvider}
-                address={address}
-                blockExplorer={blockExplorer}
-              />  
-          </Route>
-
-          <Route path="/registration-success">
-            <RegistrationSuccess 
-              provider={userProvider}
-              address={address} 
-              setRoute={setRoute}
-              liquidityProtocol={liquidityProtocol}
-              setLiquidityProtocol={setLiquidityProtocol}
+          <Switch>
+            <Route exact path="/">
+              <Home 
+                setRoute={setRoute}
               />
-          </Route>
-          <Route path="/smart-contract-details">
-            <SmartContractDetails 
-              depositAmount={depositAmount}
-              setDepositAmount={setDepositAmount}
-              setRoute={setRoute} />
-          </Route>
-          <Route path="/review-and-purchase">
-            <ReviewAndPurchase
-              liquidityProtocol={liquidityProtocol}
-              depositAmount={depositAmount}
-              liquidityProtocolToAddressMap={liquidityProtocolToAddressMap}
-              writeContracts={writeContracts}
-              tx={tx}
-              tusdAddress={tusdAddress}
-              setRoute={setRoute}
-              signer={userProvider.getSigner()}
-              provider={userProvider}
+            </Route>
+            <Route exact path="/debug">
+              <DebugPanel
+                tx={tx}
+                writeContracts={writeContracts}
+                tusdAddress={tusdAddress}
+                provider={userProvider}
+                mockPoRPoSAddresses={mockPoRPoSAddresses}
+                realPoRPoSAddresses={realPoRPoSAddresses}
               />
-          </Route>
-          <Route path="/successfully-connected">
-            <SuccessfullyConnected />
-          </Route>
+            </Route>
+            <Route exact path="/debug/liquidityProtocolInsurance">
+              <Contract
+                name="LiquidityProtocolInsurance"
+                signer={userProvider.getSigner()}
+                provider={userProvider}
+                address={address}
+                blockExplorer={blockExplorer}
+              />
+            </Route>
+            <Route path="/debug/mockTUSD">
+              <Contract
+                  name="TUSDMock"
+                  signer={userProvider.getSigner()}
+                  provider={userProvider}
+                  address={address}
+                  blockExplorer={blockExplorer}
+                />  
+            </Route>
+            <Route path="/debug/liquidityProtocolMock">
+              <Contract
+                  name="LiquidityProtocolMock"
+                  signer={userProvider.getSigner()}
+                  provider={userProvider}
+                  address={address}
+                  blockExplorer={blockExplorer}
+                />  
+            </Route>
+            <Route path="/debug/ReserveTokenMock">
+              <Contract
+                  name="ReserveTokenMock"
+                  signer={userProvider.getSigner()}
+                  provider={userProvider}
+                  address={address}
+                  blockExplorer={blockExplorer}
+                />  
+            </Route>
 
-          <Route path="/dashboard">
-            <Dashboard
-              writeContracts={writeContracts}
-              provider={userProvider}
-              signer={userProvider.getSigner()}
-              address={address}
-              tx={tx}
-            />
-          </Route>
+            <Route path="/registration-success">
+              <RegistrationSuccess 
+                provider={userProvider}
+                address={address} 
+                setRoute={setRoute}
+                liquidityProtocol={liquidityProtocol}
+                setLiquidityProtocol={setLiquidityProtocol}
+                />
+            </Route>
+            <Route path="/smart-contract-details">
+              <SmartContractDetails 
+                depositAmount={depositAmount}
+                setDepositAmount={setDepositAmount}
+                setRoute={setRoute} />
+            </Route>
+            <Route path="/review-and-purchase">
+              <ReviewAndPurchase
+                liquidityProtocol={liquidityProtocol}
+                depositAmount={depositAmount}
+                liquidityProtocolToAddressMap={liquidityProtocolToAddressMap}
+                writeContracts={writeContracts}
+                tx={tx}
+                tusdAddress={tusdAddress}
+                setRoute={setRoute}
+                signer={userProvider.getSigner()}
+                provider={userProvider}
+                />
+            </Route>
+            <Route path="/successfully-connected">
+              <SuccessfullyConnected />
+            </Route>
 
-        </Switch>
+            <Route path="/dashboard">
+              <Dashboard
+                writeContracts={writeContracts}
+                provider={userProvider}
+                signer={userProvider.getSigner()}
+                address={address}
+                tx={tx}
+              />
+            </Route>
+
+          </Switch>
+       
+
+        <ThemeSwitch />
+
+
+        {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
+        <div style={{ position: "absolute", textAlign: "right", right: 0, top: 0, padding: 10 }}>
+          <Account
+            address={address}
+            localProvider={localProvider}
+            userProvider={userProvider}
+            mainnetProvider={mainnetProvider}
+            price={price}
+            web3Modal={web3Modal}
+            loadWeb3Modal={loadWeb3Modal}
+            logoutOfWeb3Modal={logoutOfWeb3Modal}
+            blockExplorer={blockExplorer}
+          />
+          {faucetHint}
+        </div>
+
+        {userProvider.connection.url !== "unknown:" &&
+        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
+
+          <Row align="middle" gutter={[4, 4]}>
+            <Col span={24}>
+              {
+
+                /*  if the local provider has a signer, let's show the faucet:  */
+                faucetAvailable ? (
+                  <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider}/>
+                ) : (
+                  ""
+                )
+              }
+            </Col>
+          </Row>
+        </div>
+      }
+      
+      <Footer style={{ textAlign: 'center' }}>
+      {isAdmin &&
+              
+        <Link to="/debug">Debug Panel</Link>
+      }
+            
+      </Footer>
       </BrowserRouter>
-
-      <ThemeSwitch />
-
-
-      {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-      <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
-         <Account
-           address={address}
-           localProvider={localProvider}
-           userProvider={userProvider}
-           mainnetProvider={mainnetProvider}
-           price={price}
-           web3Modal={web3Modal}
-           loadWeb3Modal={loadWeb3Modal}
-           logoutOfWeb3Modal={logoutOfWeb3Modal}
-           blockExplorer={blockExplorer}
-         />
-         {faucetHint}
-      </div>
-
-      {userProvider.connection.url !== "unknown:" &&
-       <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-
-         <Row align="middle" gutter={[4, 4]}>
-           <Col span={24}>
-             {
-
-               /*  if the local provider has a signer, let's show the faucet:  */
-               faucetAvailable ? (
-                 <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider}/>
-               ) : (
-                 ""
-               )
-             }
-           </Col>
-         </Row>
-       </div>
-    }
-
+    </Layout>
     </div>
   );
 }

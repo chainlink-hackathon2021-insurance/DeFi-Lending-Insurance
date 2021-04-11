@@ -38,10 +38,12 @@ export default function SmartContractDetails({setRoute, depositAmount, setDeposi
                                 min="100" 
                                 size="middle"
                                 value={depositAmount}
-                                onChange={(val)=>{setDepositAmount(val)}} /> TUSD
+                                onChange={(val)=>{setDepositAmount(val)}} /> 
                         </Form.Item>
-
+                       
                     </Form>
+                        <p>TUSD (Minimum: 100 TUSD)</p>
+                        <p>APY depends on selected platform.</p>
                 </Col>
             <Col span={12}></Col>
             </Row>
