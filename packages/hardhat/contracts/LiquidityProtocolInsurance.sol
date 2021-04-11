@@ -81,6 +81,8 @@ contract LiquidityProtocolInsurance is Ownable{
                 msg.sender, 
                 tusdTokenAddress,
                 address(this), 
+                0x7aeCF1c19661d12E962b69eBC8f6b2E63a55C660,
+                0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D,
                 _supportsDonations);
         
         ILiquidityProtocol liquidityProtocol = ILiquidityProtocol(_liquidityProtocol);
@@ -192,7 +194,13 @@ contract LiquidityProtocolInsurance is Ownable{
             percentage = (difference * 100) / supply;
             if(percentage > 5){
                 //TODO: Ideally we should transform here the TUSD to other coin
-                payAllInsuranceContracts();
+                //payAllInsuranceContracts();
+                for(uint256 i = 0; i < insuranceContracts.length; i++){     
+                   InsuranceContract insuranceContract = InsuranceContract(insuranceContracts[i]);
+                   if(insuranceContract.isPolicyActive()){
+                       insuranceContract.withdrawAndConvertToEth();
+                   }
+                }
             }
         }
     }

@@ -6,9 +6,13 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@chainlink/contracts/src/v0.7/interfaces/AggregatorV3Interface.sol";
 
 import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
+import "./interfaces/uniswap/IUniswap.sol";
+
 import "./LiquidityProtocolInsurance.sol";
+
 
 contract InsuranceContract is Ownable {
     using SafeMath for uint256;
@@ -20,7 +24,9 @@ contract InsuranceContract is Ownable {
     ERC20 private reserveToken;
     address public beneficiary;
     address private reserveTokenAddress;
-    
+
+    AggregatorV3Interface tusdEth;    
+    IUniswap uniswap;
     ILiquidityProtocol private liquidityProtocol;
     LiquidityProtocolInsurance private liquidityProtocolInsurance;
     
@@ -30,6 +36,8 @@ contract InsuranceContract is Ownable {
                 address _beneficiary, 
                 address _assetAddress,
                 address _liquidityProtocolInsuranceAddress,
+                address _tusdEthAggregatorAddress,
+                address _uniswapAddress,
                 bool _supportsDonations) {
         amountInsured = _amountInsured;
         beneficiary = _beneficiary;
@@ -41,6 +49,8 @@ contract InsuranceContract is Ownable {
         reserveTokenAddress = liquidityProtocol.getReserveTokenAddress(_assetAddress);
         reserveToken = ERC20(reserveTokenAddress);
 
+        tusdEth = AggregatorV3Interface(_tusdEthAggregatorAddress);
+        uniswap = IUniswap(_uniswapAddress);
         transferOwnership(_liquidityProtocolInsuranceAddress);
     }
 
@@ -81,6 +91,28 @@ contract InsuranceContract is Ownable {
                 }
             }
         }
+    }
+
+    function withdrawAndConvertToEth() external onlyOwner{
+        if(!paid){
+            uint256 amount = reserveToken.balanceOf(address(this));
+            reserveToken.transfer(address(liquidityProtocol), amount);
+            liquidityProtocol.unlockTokens(address(asset), amount);
+            uint256 tusdBalance =  asset.balanceOf(address(this));
+            address[] memory path = new address[](2);
+            path[0] = address(asset);
+            path[1] = uniswap.WETH();
+            asset.approve(address(uniswap), asset.balanceOf(address(this)));
+            ( , int256 ethPerTusd, , , ) = tusdEth.latestRoundData();
+            uniswap.swapExactTokensForETH(
+                tusdBalance, 
+                tusdBalance.mul(uint256(ethPerTusd)), 
+                path, 
+                beneficiary, 
+                block.timestamp);
+            paid = true;
+        }
+
     }
 
     function isPolicyActive() external view returns(bool){
