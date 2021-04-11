@@ -40,15 +40,12 @@ describe("Liquidity Protocol Insurance App", () => {
                                                                   tusdReserveUnstableMock.address);
     [owner, addr1] = await ethers.getSigners();
     validCoverageData = {
-      startDate: Math.floor(Date.now() / 1000),
-      endDate: Math.floor(addDays(Date.now(),10)/1000),
       amountInsured: 2000,
       liquidityProtocol: liquidityProtocolMock.address,
     };
     await tusdMock.faucet(addr1.address, 2000);
     await tusdMock.connect(addr1).approve(mainInsuranceContract.address, 2000);
-    await mainInsuranceContract.connect(addr1).registerInsurancePolicy(validCoverageData.startDate, 
-      validCoverageData.endDate, 
+    await mainInsuranceContract.connect(addr1).registerInsurancePolicy(
       validCoverageData.amountInsured, 
       validCoverageData.liquidityProtocol);
 
@@ -60,14 +57,11 @@ describe("Liquidity Protocol Insurance App", () => {
     it("Should NOT create insurance policy if the liquidity protocol is not whitelisted", async () => {
           
       const invalidCoverageData = {
-        startDate: Math.floor(Date.now() / 1000),
-        endDate: Math.floor(Date.now()/1000) + 50,
         amountInsured: 2000,
         liquidityProtocol: owner.address
       };
 
-      await expect(mainInsuranceContract.connect(addr1).registerInsurancePolicy(invalidCoverageData.startDate, 
-                                                                            invalidCoverageData.endDate, 
+      await expect(mainInsuranceContract.connect(addr1).registerInsurancePolicy(
                                                                             invalidCoverageData.amountInsured, 
                                                                             invalidCoverageData.liquidityProtocol))
         .to.be.revertedWith("Liquidity Protocol address not found in the whitelist");
@@ -155,8 +149,7 @@ describe("Liquidity Protocol Insurance App", () => {
     it("Should pay out if PoR / PoS is UNSTABLE", async () => {
       await tusdMock.faucet(addr1.address, 2000);
       await tusdMock.connect(addr1).approve(mainInsuranceContractUnstableReserve.address, 2000);
-      await mainInsuranceContractUnstableReserve.connect(addr1).registerInsurancePolicy(validCoverageData.startDate, 
-      validCoverageData.endDate, 
+      await mainInsuranceContractUnstableReserve.connect(addr1).registerInsurancePolicy(
       validCoverageData.amountInsured, 
       validCoverageData.liquidityProtocol);
 

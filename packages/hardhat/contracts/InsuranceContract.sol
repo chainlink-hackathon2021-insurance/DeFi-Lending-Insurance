@@ -11,8 +11,6 @@ import "./LiquidityProtocolInsurance.sol";
 
 contract InsuranceContract is Ownable {
 
-    uint256 public startDate;
-    uint256 public endDate;
     uint256 public amountInsured;
     bool public paid;
     IERC20 private asset;
@@ -24,15 +22,11 @@ contract InsuranceContract is Ownable {
     LiquidityProtocolInsurance private liquidityProtocolInsurance;
     
     constructor(
-                uint256 _startDate,
-                uint256 _endDate,
                 uint256 _amountInsured,
                 address _liquidityProtocol,
                 address _beneficiary, 
                 address _assetAddress,
                 address _liquidityProtocolInsuranceAddress) {
-        startDate = _startDate;
-        endDate = _endDate;
         amountInsured = _amountInsured;
         beneficiary = _beneficiary;
         asset = IERC20(_assetAddress);
@@ -70,13 +64,8 @@ contract InsuranceContract is Ownable {
         return amountToWithdraw;
     }
 
-    function isPolicyCurrent() public view returns(bool) {
-        return block.timestamp >= startDate && block.timestamp <= endDate;
-    }
 
     function isPolicyActive() public view returns(bool){
-        /*bool isCurrent = isPolicyCurrent();
-        return isCurrent && !paid;*/
         return !paid;
     }
 }

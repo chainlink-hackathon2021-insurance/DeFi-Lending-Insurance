@@ -59,8 +59,6 @@ export default function ReviewAndPurchase({setRoute, depositAmount, liquidityPro
                 }}>Approve first!</Button>
                 <Button disabled={!approved} type="primary" onClick={async ()=>{
                     const result = await tx( writeContracts.LiquidityProtocolInsurance.registerInsurancePolicy(
-                        Math.floor(Date.now() / 1000), 
-                        Math.floor(Date.now() / 1000),
                         parseEther(depositAmount.toString()), 
                         liquidityProtocolToAddressMap[liquidityProtocol]
                         ));  

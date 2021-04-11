@@ -65,15 +65,11 @@ contract LiquidityProtocolInsurance is Ownable{
     }
 
     function registerInsurancePolicy(
-        uint256 _startDate,
-        uint256 _endDate,
         uint256 _amountInsured,
         address _liquidityProtocol) 
     public validateLiquidityProtocolAddress(_liquidityProtocol) {
         //Create insurance contract
         InsuranceContract insuranceContract = new InsuranceContract(
-                _startDate,
-                _endDate,
                 _amountInsured,
                 _liquidityProtocol,
                 msg.sender, 
