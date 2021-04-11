@@ -8,7 +8,7 @@ const R = require("ramda");
 const main = async () => {
   let targetNetwork = process.env.HARDHAT_NETWORK || config.defaultNetwork
   console.log("\n\n 📡 Deploying... to "+targetNetwork+"\n");
-  const [deployer] = await ethers.getSigners();
+  const [deployer, client, donee] = await ethers.getSigners();
 
   if(targetNetwork === "localhost"){
     const tusdMock = await deploy("TUSDMock");
@@ -24,7 +24,8 @@ const main = async () => {
                                                                                     [liquidityProtocolMock.address],
                                                                                     tusdMock.address,
                                                                                     tusdSupplyMock.address,
-                                                                                    tusdReserveMock.address
+                                                                                    tusdReserveMock.address,
+                                                                                    donee.address
                                                                                   ]); 
   }
   else if(targetNetwork === "kovan"){
@@ -41,13 +42,14 @@ const main = async () => {
     const aaveLiquidityProtocol = await deploy("AaveLiquidityProtocol", [aaveAddresses.protocolDataProvider, aaveAddresses.lendingPool]);
     const reserveTokenMock = await deploy("ReserveTokenMock");
     const liquidityProtocolMock = await deploy("LiquidityProtocolMock", [reserveTokenMock.address]);
-
+    const donee = "0x634977e11C823a436e587C1a1Eca959588C64287" // giveth.io address
     const liquidityProtocolInsurance = await deploy("LiquidityProtocolInsurance", [
                                                                                     [liquidityProtocolMock.address, 
                                                                                     aaveLiquidityProtocol.address],
                                                                                     tusdAddress,
                                                                                     tusdSupplyFeedAddress,
-                                                                                    tusdReserveFeedAddress
+                                                                                    tusdReserveFeedAddress,
+                                                                                    donee.address
                                                                                   ]); 
 
   }

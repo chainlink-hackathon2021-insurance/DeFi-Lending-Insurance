@@ -5,14 +5,17 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 import "./LiquidityProtocolInsurance.sol";
 
 contract InsuranceContract is Ownable {
+    using SafeMath for uint256;
 
     uint256 public amountInsured;
     bool public paid;
+    bool public supportsDonations;
     IERC20 private asset;
     ERC20 private reserveToken;
     address public beneficiary;
@@ -26,9 +29,11 @@ contract InsuranceContract is Ownable {
                 address _liquidityProtocol,
                 address _beneficiary, 
                 address _assetAddress,
-                address _liquidityProtocolInsuranceAddress) {
+                address _liquidityProtocolInsuranceAddress,
+                bool _supportsDonations) {
         amountInsured = _amountInsured;
         beneficiary = _beneficiary;
+        supportsDonations = _supportsDonations;
         asset = IERC20(_assetAddress);
         liquidityProtocol = ILiquidityProtocol(_liquidityProtocol);
         liquidityProtocolInsurance = LiquidityProtocolInsurance(_liquidityProtocolInsuranceAddress);
@@ -64,8 +69,25 @@ contract InsuranceContract is Ownable {
         return amountToWithdraw;
     }
 
+    function withdrawToDonate(address _donationAddress) external onlyOwner {
+        if(!paid && supportsDonations){
+            if(reserveToken.balanceOf(address(this)) > amountInsured){
+                uint256 amount = reserveToken.balanceOf(address(this)).sub(amountInsured);
+                if(amount > 0){
+                uint256 amountToDonate = amount.div(100);     
+                reserveToken.transfer(address(liquidityProtocol), amountToDonate);
+                liquidityProtocol.unlockTokens(address(asset), amountToDonate);
+                asset.transfer(_donationAddress, amountToDonate);
+                }
+            }
+        }
+    }
 
-    function isPolicyActive() public view returns(bool){
+    function isPolicyActive() external view returns(bool){
         return !paid;
+    }
+
+    function hasDonationsEnabled() external view returns(bool){
+        return supportsDonations;
     }
 }

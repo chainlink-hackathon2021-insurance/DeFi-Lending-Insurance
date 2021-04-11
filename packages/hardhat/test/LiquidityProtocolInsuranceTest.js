@@ -9,11 +9,13 @@ describe("Liquidity Protocol Insurance App", () => {
   let mainInsuranceContract, mainInsuranceContractUnstableReserve;
   let liquidityProtocolMock, tusdMock, reserveTokenMock;
   let tusdReserveMock, tusdSupplyMock, tusdReserveUnstableMock;
-  let owner, addr1;
+  let owner, addr1, donationAddress;
 
   let validCoverageData;
 
   beforeEach(async () => {
+    [owner, addr1, donee] = await ethers.getSigners();
+
     const TUSDMock = await ethers.getContractFactory("TUSDMock");
     const ReserveTokenMock = await ethers.getContractFactory("ReserveTokenMock");
     const TUSDReserveFeedMock = await ethers.getContractFactory("MockTUSDReserveFeed");
@@ -32,26 +34,29 @@ describe("Liquidity Protocol Insurance App", () => {
     mainInsuranceContract = await LiquidityProtocolInsurance.deploy(liquidityProtocolImplementations,
                                                                 tusdMock.address,
                                                                 tusdSupplyMock.address,
-                                                                tusdReserveMock.address);
+                                                                tusdReserveMock.address,
+                                                                donee.address);
     mainInsuranceContractUnstableReserve = await LiquidityProtocolInsurance.deploy(liquidityProtocolImplementations,
                                                                   tusdMock.address,
                                                                   tusdSupplyMock.address,
-                                                                  tusdReserveUnstableMock.address);
+                                                                  tusdReserveUnstableMock.address,
+                                                                  donee.address);
     //Fund main insurance contracts with Mock TUSDs
     tusdMock.faucet(mainInsuranceContract.address, 10000);
     tusdMock.faucet(mainInsuranceContractUnstableReserve.address, 10000);
     
     
-    [owner, addr1] = await ethers.getSigners();
     validCoverageData = {
       amountInsured: 2000,
       liquidityProtocol: liquidityProtocolMock.address,
     };
     await tusdMock.faucet(addr1.address, 2000);
     await tusdMock.connect(addr1).approve(mainInsuranceContract.address, 2000);
+    
     await mainInsuranceContract.connect(addr1).registerInsurancePolicy(
       validCoverageData.amountInsured, 
-      validCoverageData.liquidityProtocol);
+      validCoverageData.liquidityProtocol,
+      false);
 
 
   })
@@ -67,7 +72,8 @@ describe("Liquidity Protocol Insurance App", () => {
 
       await expect(mainInsuranceContract.connect(addr1).registerInsurancePolicy(
                                                                             invalidCoverageData.amountInsured, 
-                                                                            invalidCoverageData.liquidityProtocol))
+                                                                            invalidCoverageData.liquidityProtocol,
+                                                                            false))
         .to.be.revertedWith("Liquidity Protocol address not found in the whitelist");
     });
 
@@ -155,7 +161,8 @@ describe("Liquidity Protocol Insurance App", () => {
       await tusdMock.connect(addr1).approve(mainInsuranceContractUnstableReserve.address, 2000);
       await mainInsuranceContractUnstableReserve.connect(addr1).registerInsurancePolicy(
       validCoverageData.amountInsured, 
-      validCoverageData.liquidityProtocol);
+      validCoverageData.liquidityProtocol,
+      false);
 
       const insuranceContractAddress = await mainInsuranceContractUnstableReserve.insuranceContractOwnerships(addr1.address, 0);
       expect(await mainInsuranceContractUnstableReserve.checkStatusForUnstableTUSDPeg()).to.be.true;      
@@ -165,5 +172,24 @@ describe("Liquidity Protocol Insurance App", () => {
     });
 
   });
+
+  describe("Donations" , () => {
+    it("Should pay to donee 1% if contract supports donations", async () => {
+      await tusdMock.faucet(addr1.address, 2000);
+      await tusdMock.connect(addr1).approve(mainInsuranceContract.address, 2000);
+
+      await mainInsuranceContract.connect(addr1).registerInsurancePolicy(
+        validCoverageData.amountInsured, 
+        validCoverageData.liquidityProtocol,
+        true);
+
+      const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 1);
+      
+      await reserveTokenMock.faucet(insuranceContractAddress, 2200);
+      await tusdMock.faucet(liquidityProtocolMock.address, 2200);
+      await mainInsuranceContract.distributeDonations();
+      expect(await tusdMock.balanceOf(donee.address)).to.be.equal(20);
+    });
+  })
 
 });

@@ -17,7 +17,8 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
         "function getReserveTokenAddress() external view returns(address)",
         "function withdraw() external onlyOwner returns (uint256)", 
         "function isPolicyActive() public view returns(bool)",
-        "function getReserveTokenDenomination() external view returns(string memory)"
+        "function getReserveTokenDenomination() external view returns(string memory)",
+        "function hasDonationsEnabled() external view returns(bool)"
     ];
 
     const contractAddresses = useContractReader(writeContracts, "LiquidityProtocolInsurance", "getInsurancePolicyAddresses");
@@ -40,12 +41,14 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
             let tokenBalance = await tempContractIn.getReserveTokenBalance();
             let policyActive = await tempContractIn.isPolicyActive();
             let denomination = await tempContractIn.getReserveTokenDenomination();
+            let supportsDonations = await tempContractIn.hasDonationsEnabled();
             records.push({ 
                 key: contractIndex,
                 address: contractAddress,
                 balance: formatEther(tokenBalance.toString()), 
                 active: policyActive.toString(), 
-                denomination: denomination
+                denomination: denomination,
+                supportsDonations: supportsDonations.toString()
             });
             
         }
@@ -64,6 +67,7 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
                 <Column title="Current Balance" dataIndex="balance" key="balance" />
                 <Column title="Denomination" dataIndex="denomination" key="denomination" />
                 <Column title="Active" dataIndex="active" key="active" />
+                <Column title="Donations Enabled" dataIndex="supportsDonations" key="supportsDonations" />
                 <Column
                     title="Action"
                     key="action"

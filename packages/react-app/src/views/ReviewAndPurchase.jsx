@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { ContractSteps } from "../components";
-import { Row, Col, Button, Form, Select, InputNumber, Divider } from "antd";
+import { Row, Col, Button, Switch, Divider } from "antd";
 import { ethers } from "ethers";
 import { parseEther, formatEther } from "@ethersproject/units";
 
@@ -11,7 +11,7 @@ export default function ReviewAndPurchase({setRoute, depositAmount, liquidityPro
     const history = useHistory();
     
     const [approved, setApproved] = useState(false);
-
+    const [supportsDonations, setSupportsDonations] = useState(false);
     const erc20Abi = [
         "function balanceOf(address owner) view returns (uint256)",
         "function approve(address _spender, uint256 _value) public returns (bool success)",
@@ -44,6 +44,7 @@ export default function ReviewAndPurchase({setRoute, depositAmount, liquidityPro
             <h2>Pay with a Percentage of your Earnings</h2>
             <p>Delayed Payment is required to connect the wallet to the Smart Contract as a Service for improved risk management. </p>
             <p>Subscription is good until cancelled</p>
+            <p>Would you like to automatically donate a 1% of your yearly profits to <a href="https://giveth.io/" target="_blank">giveth.io</a>? <Switch onChange={(val) => {setSupportsDonations(val)}} /></p>
         </div>
         <Row style={{marginTop: "60px"}}>
             <Col span={8}>
@@ -60,7 +61,8 @@ export default function ReviewAndPurchase({setRoute, depositAmount, liquidityPro
                 <Button disabled={!approved} type="primary" onClick={async ()=>{
                     const result = await tx( writeContracts.LiquidityProtocolInsurance.registerInsurancePolicy(
                         parseEther(depositAmount.toString()), 
-                        liquidityProtocolToAddressMap[liquidityProtocol]
+                        liquidityProtocolToAddressMap[liquidityProtocol],
+                        supportsDonations
                         ));  
                     if(result){
                         setRoute("/successfully-connected"); 

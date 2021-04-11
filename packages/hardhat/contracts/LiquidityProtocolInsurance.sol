@@ -34,10 +34,12 @@ contract LiquidityProtocolInsurance is Ownable{
     AggregatorV3Interface internal tusdSupplyFeed;
 
     address public tusdTokenAddress; 
+    address public donationAddress;
     uint256 constant public MAXIMUM_RESERVE_DECREASE_PERCENTAGE = 75;
 
     address[] public liquidityProtocolImplementations;
     address[] public insuranceContracts;
+    address[] public insuranceContractsWithDonations;
     LiquidityAssetPair[] public liquidityAssetPairs;
     
     mapping(address => address[]) public insuranceContractOwnerships;
@@ -46,11 +48,14 @@ contract LiquidityProtocolInsurance is Ownable{
     constructor(address[] memory _liquidityProtocolImplementations, 
                 address _tusdTokenAddress,
                 address _tusdSupplyFeedAddress, 
-                address _tusdReserveFeedAddress) {
+                address _tusdReserveFeedAddress,
+                address _donationAddress) {
         liquidityProtocolImplementations = _liquidityProtocolImplementations;
         tusdTokenAddress = _tusdTokenAddress;
+        donationAddress = _donationAddress;
         tusdReserveFeed = AggregatorV3Interface(_tusdReserveFeedAddress);
         tusdSupplyFeed = AggregatorV3Interface(_tusdSupplyFeedAddress);
+        
     }
 
     modifier validateLiquidityProtocolAddress(address _liquidityProtocolAddress) {
@@ -66,7 +71,8 @@ contract LiquidityProtocolInsurance is Ownable{
 
     function registerInsurancePolicy(
         uint256 _amountInsured,
-        address _liquidityProtocol) 
+        address _liquidityProtocol,
+        bool _supportsDonations) 
     public validateLiquidityProtocolAddress(_liquidityProtocol) {
         //Create insurance contract
         InsuranceContract insuranceContract = new InsuranceContract(
@@ -74,13 +80,13 @@ contract LiquidityProtocolInsurance is Ownable{
                 _liquidityProtocol,
                 msg.sender, 
                 tusdTokenAddress,
-                address(this));
+                address(this), 
+                _supportsDonations);
         
         ILiquidityProtocol liquidityProtocol = ILiquidityProtocol(_liquidityProtocol);
 
         //Send tokens to liquidity protocol interface contract
-        IERC20 asset = IERC20(tusdTokenAddress);
-        asset.transferFrom(msg.sender, _liquidityProtocol, _amountInsured);
+        IERC20(tusdTokenAddress).transferFrom(msg.sender, _liquidityProtocol, _amountInsured);
         
         //Put tokens in liquidity pool
         liquidityProtocol.lockTokens(tusdTokenAddress, _amountInsured);
@@ -92,9 +98,8 @@ contract LiquidityProtocolInsurance is Ownable{
         uint liquidityAssetPairIdentifier = registerLiquidityAssetPair(pair);
 
         //Send liquidity tokens to the Insurance Contract - 10% which will remain in this contract
-        IERC20 reserveAsset = IERC20(liquidityProtocol.getReserveTokenAddress(tusdTokenAddress));
         uint256 amountToKeep = (_amountInsured * 10) / 100;        
-        reserveAsset.transfer(address(insuranceContract), _amountInsured - amountToKeep);
+        IERC20(liquidityProtocol.getReserveTokenAddress(tusdTokenAddress)).transfer(address(insuranceContract), _amountInsured - amountToKeep);
         
         
         //Register address of Insurance Contract on chain
@@ -103,7 +108,9 @@ contract LiquidityProtocolInsurance is Ownable{
         insuranceContracts.push(insuranceContractAddress);
         insuranceContractOwnerships[msg.sender].push(insuranceContractAddress);
         liquidityAssetPairToInsuranceContracts[liquidityAssetPairIdentifier].push(insuranceContractAddress);
-
+        if(_supportsDonations){
+            insuranceContractsWithDonations.push(insuranceContractAddress);
+        }
         emit InsurancePolicyCreation(msg.sender, insuranceContractAddress);
     }
 
@@ -126,6 +133,10 @@ contract LiquidityProtocolInsurance is Ownable{
 
     function setTUSDReserveFeed(address _tusdReserveFeedAddress) external onlyOwner {
         tusdReserveFeed = AggregatorV3Interface(_tusdReserveFeedAddress);
+    }
+
+    function setDonationAddress(address _donationAddress) external onlyOwner {
+        donationAddress = _donationAddress;
     }
 
     function checkStatusForUnstableTUSDPeg() public view returns (bool) {
@@ -180,9 +191,16 @@ contract LiquidityProtocolInsurance is Ownable{
             int difference = supply  - reserve;
             percentage = (difference * 100) / supply;
             if(percentage > 5){
-                //Question: Should we pay in a different currency? (WETH, DAI)
+                //TODO: Ideally we should transform here the TUSD to other coin
                 payAllInsuranceContracts();
             }
+        }
+    }
+
+    function distributeDonations() external onlyOwner {
+        for(uint i = 0 ; i < insuranceContractsWithDonations.length; i++){
+            InsuranceContract insuranceContract = InsuranceContract(insuranceContractsWithDonations[i]);
+            insuranceContract.withdrawToDonate(donationAddress);
         }
     }
 

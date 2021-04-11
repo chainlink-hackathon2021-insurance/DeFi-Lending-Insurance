@@ -82,6 +82,10 @@ export default function DebugPanel({writeContracts, tx, tusdAddress, provider, m
     tx(writeContracts.LiquidityProtocolInsurance.setTUSDSupplyFeed(realPoRPoSAddresses.supply));
   }
 
+  async function distributeDonations() {
+    tx(writeContracts.LiquidityProtocolInsurance.distributeDonations());
+  }
+
 
   return (
       <div style={{border:"1px solid #cccccc", padding:16, width:"80%", margin:"auto",marginTop:64}}>
@@ -108,6 +112,10 @@ export default function DebugPanel({writeContracts, tx, tusdAddress, provider, m
             <p><Button type="primary" style={{ width: "238px"}} onClick={async ()=> { setBalancedReserveValue();}} >PoR: Set balanced value</Button></p>
             <p><Button type="primary" style={{ width: "238px"}} onClick={async ()=> { setReserveContractToReal();}} >PoR: Set Real PoR</Button></p>
             <p><Button type="primary" style={{ width: "238px"}} onClick={async ()=> { setSupplyContractToReal();}} >PoS: Set Real PoS</Button></p>
+          </Card>
+
+          <Card title="Donations" style={{ width: 300, textAlign: 'left' }}>
+            <p><Button type="primary" style={{ width: "238px"}} onClick={async ()=> { distributeDonations();}} >Distribute Donations</Button></p>
           </Card>
         </Space>
       </div>
