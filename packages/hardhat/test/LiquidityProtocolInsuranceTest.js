@@ -79,8 +79,8 @@ describe("Liquidity Protocol Insurance App", () => {
 
     it("Should create and register an insurance policy", async () => {
       const amountInsured = 2000;
-      const expectedReserveTokensToHaveInContract = amountInsured * 0.9;
-      const expectedReserveTokensToKeepInMainContract = amountInsured * 0.1;
+      const expectedReserveTokensToHaveInContract = amountInsured * 0.95;
+      const expectedReserveTokensToKeepInMainContract = amountInsured * 0.05;
     
       const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
       const contract = await ethers.getContractAt("InsuranceContract", insuranceContractAddress);
@@ -98,7 +98,7 @@ describe("Liquidity Protocol Insurance App", () => {
 
       const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
       await mainInsuranceContract.connect(addr1).withdraw(insuranceContractAddress);
-      expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured - (validCoverageData.amountInsured  * 0.1)); 
+      expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured - (validCoverageData.amountInsured  * 0.05)); 
 
     });
 
@@ -188,7 +188,7 @@ describe("Liquidity Protocol Insurance App", () => {
       await reserveTokenMock.faucet(insuranceContractAddress, 2200);
       await tusdMock.faucet(liquidityProtocolMock.address, 2200);
       await mainInsuranceContract.distributeDonations();
-      expect(await tusdMock.balanceOf(donee.address)).to.be.equal(20);
+      expect(await tusdMock.balanceOf(donee.address)).to.be.equal(21);
     });
   })
 
