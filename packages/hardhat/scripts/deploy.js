@@ -29,8 +29,8 @@ const main = async () => {
   }
   else if(targetNetwork === "kovan"){
     const tusdAddress = "0x016750AC630F711882812f24Dba6c95b9D35856d";
-    const tusdSupplyFeedAddress = "0xC3749f644c988Dc9AA9461D6Cb1d8A5E1d452D99";
-    const tusdReserveFeedAddress = "0xdD6Dbd1861971455C20d5bd00DeA4DDE704f3554";
+    const tusdSupplyFeedAddress = "0x4A5fd3745AC94026dd05F4F8a7d358c16a87B240";
+    const tusdReserveFeedAddress = "0xcFaAc8333598e3809712693E4ed72306416d20CD";
     const aaveAddresses = {
       lendingPool :  "0xE0fBa4Fc209b4948668006B2bE61711b7f465bAe",
       protocolDataProvider : "0x3c73A5E5785cAC854D468F727c606C07488a29D6"

@@ -154,7 +154,8 @@ contract LiquidityProtocolInsurance is Ownable{
     // CALLED EXTERNALLY    
     function checkForSignificantReserveDecreaseAndPay() public onlyOwner {
         for(uint liquidityAssetPairsIdx = 0; liquidityAssetPairsIdx < liquidityAssetPairs.length; liquidityAssetPairsIdx++){
-            uint256 decreasePercentage = calculateReserveDecreasePercentage(liquidityAssetPairs[liquidityAssetPairsIdx]);
+            LiquidityAssetPair storage pair = liquidityAssetPairs[liquidityAssetPairsIdx];
+            uint256 decreasePercentage = calculateReserveDecreasePercentage(pair);
             if(decreasePercentage >= MAXIMUM_RESERVE_DECREASE_PERCENTAGE){
                 for(uint256 insuranceContractsIdx = 0; insuranceContractsIdx < liquidityAssetPairToInsuranceContracts[liquidityAssetPairsIdx].length; insuranceContractsIdx++){
                     address insuranceContractAddress = liquidityAssetPairToInsuranceContracts[liquidityAssetPairsIdx][insuranceContractsIdx];
@@ -200,7 +201,7 @@ contract LiquidityProtocolInsurance is Ownable{
         }
     }
 
-    function calculateReserveDecreasePercentage(LiquidityAssetPair memory _liquidityAssetPair) private view returns(uint256) {
+    function calculateReserveDecreasePercentage(LiquidityAssetPair storage _liquidityAssetPair) private returns(uint256) {
         uint256 percentage = 0;
         ILiquidityProtocol liquidityProtocol = ILiquidityProtocol(_liquidityAssetPair.liquidityProtocol);
         uint256 currentReserve = liquidityProtocol.getReserve(tusdTokenAddress);
@@ -209,7 +210,7 @@ contract LiquidityProtocolInsurance is Ownable{
             uint256 difference = previousReserve.sub(currentReserve);
             percentage = difference.mul(100).div(previousReserve);
         }
-
+        _liquidityAssetPair.latestReserve = currentReserve;
         return percentage;
     }
 
