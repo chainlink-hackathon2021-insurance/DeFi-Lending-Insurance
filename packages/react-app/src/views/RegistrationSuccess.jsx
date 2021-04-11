@@ -31,7 +31,7 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
         <ContractSteps currentStep={1} />
         <Row style={{marginTop: "60px"}}>
             <Col span={12}>
-                <img src={process.env.PUBLIC_URL + '/registration-success.png'} />
+                <img src="https://ipfs.io/ipfs/QmPQCR3DxgJytoNRwKdudz6bnJbwhp4hRneXgnTb5dj817" />
             </Col>
             <Col span={12}>
                 <h3>Connected Platforms</h3>
