@@ -16,8 +16,8 @@ describe("Liquidity Protocol Insurance App", () => {
   beforeEach(async () => {
     const TUSDMock = await ethers.getContractFactory("TUSDMock");
     const ReserveTokenMock = await ethers.getContractFactory("ReserveTokenMock");
-    const TUSDReserveFeedMock = await ethers.getContractFactory("MockAggregator");
-    const TUSDSupplyFeedMock = await ethers.getContractFactory("MockAggregator");
+    const TUSDReserveFeedMock = await ethers.getContractFactory("MockTUSDReserveFeed");
+    const TUSDSupplyFeedMock = await ethers.getContractFactory("MockTUSDSupplyFeed");
 
     tusdMock = await TUSDMock.deploy();
     reserveTokenMock = await ReserveTokenMock.deploy();
@@ -116,7 +116,6 @@ describe("Liquidity Protocol Insurance App", () => {
     it("Should NOT pay out if there is NOT a significant decrease of the liquidity pool (reserve)", async () => {
       const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
 
-      expect(await mainInsuranceContract.checkStatusForSignificantReserveDecrease()).to.be.false;
       const insuranceContractTUSDBalanceBefore = await tusdMock.balanceOf(insuranceContractAddress);
       expect(insuranceContractTUSDBalanceBefore).to.be.equal(0);
       await mainInsuranceContract.checkForSignificantReserveDecreaseAndPay();
@@ -132,7 +131,6 @@ describe("Liquidity Protocol Insurance App", () => {
       const decreasedTUSDInReserve = Math.floor(currentTUSDInLiquidityProtocolMockReserve - (currentTUSDInLiquidityProtocolMockReserve * 0.75));
       await liquidityProtocolMock.setReserve(tusdMock.address, decreasedTUSDInReserve);
 
-      expect(await mainInsuranceContract.checkStatusForSignificantReserveDecrease()).to.be.true;
       await mainInsuranceContract.checkForSignificantReserveDecreaseAndPay();
       expect(await tusdMock.balanceOf(insuranceContractAddress)).to.be.equal(0); 
       

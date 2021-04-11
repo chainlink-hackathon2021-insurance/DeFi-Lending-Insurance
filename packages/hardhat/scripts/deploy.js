@@ -13,8 +13,8 @@ const main = async () => {
   if(targetNetwork === "localhost"){
     const tusdMock = await deploy("TUSDMock");
     const reserveTokenMock = await deploy("ReserveTokenMock");
-    const tusdReserveMock = await deploy("MockAggregator", [8, '32450358663000000']);
-    const tusdSupplyMock = await deploy("MockAggregator", [8, '32326049998805076']);
+    const tusdReserveMock = await deploy("MockTUSDReserveFeed", [8, '32450358663000000']);
+    const tusdSupplyMock = await deploy("MockTUSDSupplyFeed", [8, '32326049998805076']);
     const liquidityProtocolMock = await deploy("LiquidityProtocolMock", [reserveTokenMock.address]);
 
     //Add To Reserve
@@ -36,6 +36,8 @@ const main = async () => {
       protocolDataProvider : "0x3c73A5E5785cAC854D468F727c606C07488a29D6"
     }
 
+    const tusdReserveMock = await deploy("MockTUSDReserveFeed", [8, '32450358663000000']);
+    const tusdSupplyMock = await deploy("MockTUSDSupplyFeed", [8, '32326049998805076']);
     const aaveLiquidityProtocol = await deploy("AaveLiquidityProtocol", [aaveAddresses.protocolDataProvider, aaveAddresses.lendingPool]);
     const reserveTokenMock = await deploy("ReserveTokenMock");
     const liquidityProtocolMock = await deploy("LiquidityProtocolMock", [reserveTokenMock.address]);

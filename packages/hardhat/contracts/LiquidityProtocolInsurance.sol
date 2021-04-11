@@ -115,6 +115,14 @@ contract LiquidityProtocolInsurance is Ownable{
         return insuranceContractOwnerships[msg.sender];
     }
 
+    function getTUSDSupplyFeed() external view returns(address) {
+        return address(tusdSupplyFeed);
+    }
+
+    function getTUSDReserveFeed() external view returns(address) {
+        return address(tusdReserveFeed);
+    }
+
     // ADMIN FUNCTIONS
     function setTUSDSupplyFeed(address _tusdSupplyFeedAddress) external onlyOwner {
         tusdSupplyFeed = AggregatorV3Interface(_tusdSupplyFeedAddress);
@@ -122,17 +130,6 @@ contract LiquidityProtocolInsurance is Ownable{
 
     function setTUSDReserveFeed(address _tusdReserveFeedAddress) external onlyOwner {
         tusdReserveFeed = AggregatorV3Interface(_tusdReserveFeedAddress);
-    }
-
-    function checkStatusForSignificantReserveDecrease() public view returns (bool){
-        bool shouldMakeTransaction = false;
-        for(uint liquidityAssetPairsIdx = 0; liquidityAssetPairsIdx < liquidityAssetPairs.length; liquidityAssetPairsIdx++){
-            uint256 decreasePercentage = calculateReserveDecreasePercentage(liquidityAssetPairs[liquidityAssetPairsIdx]);            
-            if(decreasePercentage >= MAXIMUM_RESERVE_DECREASE_PERCENTAGE){
-                shouldMakeTransaction = true;
-            }
-        }
-        return shouldMakeTransaction;
     }
 
     function checkStatusForUnstableTUSDPeg() public view returns (bool) {

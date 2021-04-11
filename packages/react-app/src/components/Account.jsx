@@ -92,7 +92,7 @@ export default function Account({
 
   return (
     <div>
-      {display}
+      {userProvider && userProvider.connection.url !== "unknown:" && display }
       {modalButtons}
     </div>
   );

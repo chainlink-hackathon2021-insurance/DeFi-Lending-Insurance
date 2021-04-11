@@ -52,9 +52,7 @@ contract TUSDFeed is AggregatorV3Interface, ChainlinkClient, Ownable {
             Chainlink.add(request, "path", path); 
             int timesAmount = 10**8;
             Chainlink.addInt(request, "times", timesAmount); 
-            
-            currentRound.requesting = true;
-            currentRound.startedAt = block.timestamp; 
+            currentRound = Round({answer: 0, updatedAt: 0, answeredInRound: 0, requesting: true, startedAt: block.timestamp});
             requestId = sendChainlinkRequestTo(oracle, request, fee);
         }
         return requestId;
@@ -62,11 +60,14 @@ contract TUSDFeed is AggregatorV3Interface, ChainlinkClient, Ownable {
     }
     
     function fulfillValue(bytes32 _requestId, uint256 _value) public recordChainlinkFulfillment(_requestId) {
-        currentRound.answer = int256(_value);
-        currentRound.updatedAt = block.timestamp;
-        currentRound.answeredInRound = uint80(rounds.length);
-        currentRound.requesting = false;
-        rounds.push(currentRound);
+        if(currentRound.requesting){
+            currentRound.answer = int256(_value);
+            currentRound.updatedAt = block.timestamp;
+            currentRound.answeredInRound = uint80(rounds.length);
+            currentRound.requesting = false;
+            rounds.push(currentRound);
+            currentRound = Round({answer: 0, updatedAt: 0, answeredInRound: 0, requesting: false, startedAt: 0});
+        }
     }
 
     function getRoundData(uint80 _roundId)
@@ -113,5 +114,5 @@ contract TUSDFeed is AggregatorV3Interface, ChainlinkClient, Ownable {
     function setFee(uint256 _fee) external onlyOwner{
         fee = _fee;
     }
-    
+
 }

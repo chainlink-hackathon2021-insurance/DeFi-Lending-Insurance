@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import { ContractSteps } from "../components";
 import { Row, Col, Button, Form, Select } from "antd";
 
-export default function RegistrationSuccess({address, setRoute, liquidityProtocol, setLiquidityProtocol}) {
+export default function RegistrationSuccess({address, setRoute, liquidityProtocol, setLiquidityProtocol, provider}) {
     const history = useHistory();
 
     const { Option } = Select;
@@ -35,6 +35,7 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
             </Col>
             <Col span={12}>
                 <h3>Connected Platforms</h3>
+                {provider.connection.url !== "unknown:" ? 
                 <Form
                     style={{textAlign: "left"}}
                     {...layout}
@@ -49,6 +50,7 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
                         name="address"
                         
                     >
+
                         {address}
                     </Form.Item>
 
@@ -71,15 +73,20 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
                         </Select>
                     </Form.Item>
                 </Form>
+                : (
+                    <p>Please connect your wallet using the Connect button before proceeding.</p>
+                )}
             </Col>
         </Row>
         <Row style={{marginTop: "60px"}}>
             <Col span={8}>
                 <Button type="primary">Back</Button>
             </Col>
-            <Col span={8} offset={8}>
-                <Button type="primary" onClick={()=>{setRoute("/smart-contract-details"); history.push('/smart-contract-details')}}>Next</Button>
-            </Col>
+            {provider.connection.url !== "unknown:" &&
+                <Col span={8} offset={8}>
+                    <Button type="primary" onClick={()=>{setRoute("/smart-contract-details"); history.push('/smart-contract-details')}}>Next</Button>
+                </Col>
+            }
         </Row>
       </div>
     

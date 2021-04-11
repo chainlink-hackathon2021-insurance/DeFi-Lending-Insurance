@@ -7,13 +7,13 @@ import { Row, Col, Button, Menu, Alert, Switch as SwitchD } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
+import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useBalance } from "./hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
 import { Dashboard, DebugPanel, RegistrationSuccess, ReviewAndPurchase, SmartContractDetails, SuccessfullyConnected } from "./views"
 import { useThemeSwitcher } from "react-css-theme-switcher";
-import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
+import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -35,7 +35,7 @@ import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants"
 
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS['kovan']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
@@ -48,7 +48,6 @@ if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
 //
 // attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
-const scaffoldEthProvider = new JsonRpcProvider("https://rpc.scaffoldeth.io:48544")
 const mainnetInfura = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID)
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_I
 
@@ -66,10 +65,10 @@ const blockExplorer = targetNetwork.blockExplorer;
 
 function App(props) {
 
-  const mainnetProvider = (scaffoldEthProvider && scaffoldEthProvider._network) ? scaffoldEthProvider : mainnetInfura
+  const mainnetProvider = mainnetInfura;
   if(DEBUG) console.log("🌎 mainnetProvider",mainnetProvider)
 
-  const [injectedProvider, setInjectedProvider] = useState();
+  const [injectedProvider, setInjectedProvider] = useState(null);
   /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
   const price = useExchangePrice(targetNetwork,mainnetProvider);
 
@@ -103,54 +102,28 @@ function App(props) {
   const yourMainnetBalance = useBalance(mainnetProvider, address);
   if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
 
-  // Load in your local 📝 contract and read a value from it:
-  const readContracts = useContractLoader(localProvider)
-  if(DEBUG) console.log("📝 readContracts",readContracts)
-
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
-
-  // EXTERNAL CONTRACT EXAMPLE:
-  //
-  // If you want to bring in the mainnet DAI contract it would look like:
-  const mainnetDAIContract = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
-  console.log("🌍 DAI contract on mainnet:",mainnetDAIContract)
-  //
-  // Then read your DAI balance like:
-  const myMainnetDAIBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
-  console.log("🥇 myMainnetDAIBalance:",myMainnetDAIBalance)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
   */
-
-
-  let networkDisplay = ""
-  if(localChainId && selectedChainId && localChainId != selectedChainId ){
-    networkDisplay = (
-      <div style={{zIndex:2, position:'absolute', right:0,top:60,padding:16}}>
-        <Alert
-          message={"⚠️ Wrong Network"}
-          description={(
-            <div>
-              You have <b>{NETWORK(selectedChainId).name}</b> selected and you need to be on <b>{NETWORK(localChainId).name}</b>.
-            </div>
-          )}
-          type="error"
-          closable={false}
-        />
-      </div>
-    )
-  }else{
-    networkDisplay = (
-      <div style={{zIndex:-1, position:'absolute', right:154,top:28,padding:16,color:targetNetwork.color}}>
-        {targetNetwork.name}
-      </div>
-    )
+/*
+[
+  {
+    "path": "undraw_Security_on_ff2u 1.png",
+    "hash": "QmVFKEynyFEYC5y26ZmLHJkqEX9k33r7jQDdTUhmJcTACN",
+    "size": 16582
+  },
+  {
+    "path": "PDADI_V.0 8.png",
+    "hash": "QmPQCR3DxgJytoNRwKdudz6bnJbwhp4hRneXgnTb5dj817",
+    "size": 25482
   }
-
+]
+*/
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
@@ -189,25 +162,44 @@ function App(props) {
 
   /* APPLICATION SPECIFIC STATES START HERE */
   const [liquidityProtocolToAddressMap, setLiquidityProtocolToAddressMap] = useState({});
+  const [ mockPoRPoSAddresses, setMockPoRPoSAddresses ] = useState({});
+  const [ realPoRPoSAddresses, setRealPoRPoSAddresses ] = useState({});
+  
   const [tusdAddress, setTusdAddress] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   useEffect(() => {
-    if(!readContracts) { return; }
+    if(!writeContracts) { return; }
     if(targetNetwork.name === "localhost"){
       setLiquidityProtocolToAddressMap({
-        "Aave":  readContracts.LiquidityProtocolMock.address,
-        "Mock" : readContracts.LiquidityProtocolMock.address,
-      })
-      setTusdAddress(readContracts.TUSDMock.address);
+        "Aave":  writeContracts.LiquidityProtocolMock.address,
+        "Mock" : writeContracts.LiquidityProtocolMock.address,
+      });
+      setMockPoRPoSAddresses({
+        "reserve" : writeContracts.MockTUSDReserveFeed.address,
+        "supply" : writeContracts.MockTUSDSupplyFeed.address
+      });
+      setRealPoRPoSAddresses({
+        "reserve" : writeContracts.MockTUSDReserveFeed.address,
+        "supply" : writeContracts.MockTUSDSupplyFeed.address
+      });
+      setTusdAddress(writeContracts.TUSDMock.address);
     }
     else if(targetNetwork.name === "kovan"){
       setLiquidityProtocolToAddressMap({
-        "Aave":  readContracts.AaveLiquidityProtocol.address,
-        "Mock" : readContracts.LiquidityProtocolMock.address,
+        "Aave":  writeContracts.AaveLiquidityProtocol.address,
+        "Mock" : writeContracts.LiquidityProtocolMock.address,
+      });
+      setMockPoRPoSAddresses({
+        "reserve" : writeContracts.MockTUSDReserveFeed.address,
+        "supply" : writeContracts.MockTUSDSupplyFeed.address
+      });
+      setRealPoRPoSAddresses({
+        "reserve" : "0xdD6Dbd1861971455C20d5bd00DeA4DDE704f3554",
+        "supply" : "0xC3749f644c988Dc9AA9461D6Cb1d8A5E1d452D99"
       });
       setTusdAddress("0x016750AC630F711882812f24Dba6c95b9D35856d");
     }
-  }, [readContracts]);
+  }, [writeContracts]);
 
   useEffect(() => {
     if(!writeContracts) { return; }
@@ -225,10 +217,9 @@ function App(props) {
   /* APPLICATION SPECIFIC STATES END HERE */
   return (
     <div className="App">
-
+      
       {/* ✏️ Edit the header and change the title to your project name */}
-      <Header />
-      {networkDisplay}
+      <Header networkName={userProvider.connection.url !== "unknown:" ? NETWORK(selectedChainId) : null} />
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
@@ -253,9 +244,11 @@ function App(props) {
           <Route exact path="/debug">
             <DebugPanel
               tx={tx}
-              readContracts={readContracts}
               writeContracts={writeContracts}
               tusdAddress={tusdAddress}
+              provider={userProvider}
+              mockPoRPoSAddresses={mockPoRPoSAddresses}
+              realPoRPoSAddresses={realPoRPoSAddresses}
             />
           </Route>
           <Route exact path="/debug/liquidityProtocolInsurance">
@@ -271,7 +264,7 @@ function App(props) {
             <Contract
                 name="TUSDMock"
                 signer={userProvider.getSigner()}
-                provider={localProvider}
+                provider={userProvider}
                 address={address}
                 blockExplorer={blockExplorer}
               />  
@@ -280,7 +273,7 @@ function App(props) {
             <Contract
                 name="LiquidityProtocolMock"
                 signer={userProvider.getSigner()}
-                provider={localProvider}
+                provider={userProvider}
                 address={address}
                 blockExplorer={blockExplorer}
               />  
@@ -289,7 +282,7 @@ function App(props) {
             <Contract
                 name="ReserveTokenMock"
                 signer={userProvider.getSigner()}
-                provider={localProvider}
+                provider={userProvider}
                 address={address}
                 blockExplorer={blockExplorer}
               />  
@@ -297,6 +290,7 @@ function App(props) {
 
           <Route path="/registration-success">
             <RegistrationSuccess 
+              provider={userProvider}
               address={address} 
               setRoute={setRoute}
               liquidityProtocol={liquidityProtocol}
@@ -358,7 +352,7 @@ function App(props) {
          {faucetHint}
       </div>
 
-      {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
+      {userProvider.connection.url !== "unknown:" &&
        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
 
          <Row align="middle" gutter={[4, 4]}>
@@ -375,6 +369,7 @@ function App(props) {
            </Col>
          </Row>
        </div>
+    }
 
     </div>
   );

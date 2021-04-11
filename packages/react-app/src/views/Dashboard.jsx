@@ -23,10 +23,10 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
     const contractAddresses = useContractReader(writeContracts, "LiquidityProtocolInsurance", "getInsurancePolicyAddresses");
     
     const [dataSource, setDataSource]  = useState([]);
+    
     useEffect(() => {
         const fetchData = async () => {
             const records = await fetchRecords();    
-            console.log(records);        
             setDataSource(records);
         }
         fetchData();

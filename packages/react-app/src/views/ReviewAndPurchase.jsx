@@ -27,7 +27,7 @@ export default function ReviewAndPurchase({setRoute, depositAmount, liquidityPro
             <Row>
                 <Col span={24} style={{textAlign:"left"}}>
                     <h2>Coverage Type</h2>
-                    <p>Insurance coverage pays a pre-agreed upon amount directly to your wallet immediatly upon AAVE getting hacked.</p>
+                    <p>Insurance coverage pays a pre-agreed upon amount directly to your wallet immediatly upon {liquidityProtocol} getting hacked.</p>
                 </Col>
             </Row>
             <Row style={{marginTop: "30px"}}> 
