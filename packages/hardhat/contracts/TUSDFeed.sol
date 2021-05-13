@@ -34,9 +34,9 @@ contract TUSDFeed is AggregatorV3Interface, ChainlinkClient, Ownable {
     
     constructor(string memory _path, uint8 _decimals, uint256 _version, string memory _description) {
         setPublicChainlinkToken();
-        oracle = 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e;
-        jobId = "29fa9aa13bf1468788b7cc4a500a45b8";
-        fee = 0.1 * 10 ** 18; // 0.1 LINK
+        oracle = 0xF405B99ACa8578B9eb989ee2b69D518aaDb90c1F;
+        jobId = "c51694e71fa94217b0f4a71b2a6b565a";
+        fee = 0.01 * 10 ** 18; // 0.01 LINK
         tusdFeedEndpoint = "https://core-api.real-time-attest.trustexplorer.io/trusttoken/TrueUSD";
         path = _path;
         decimals = _decimals;
