@@ -36,7 +36,7 @@ const {  Content, Footer } = Layout;
 
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['kovan']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
@@ -219,7 +219,7 @@ function App(props) {
               <a href="https://github.com/chainlink-hackathon2021-insurance" target="_blank">GitHub</a>
             </Menu.Item>
             <Menu.Item key="/devpost">
-              <a href="https://devpost.com/software/rug-pull-ready-insurance" target="_blank">Devpost</a>
+              <a href="https://devpost.com/software/parametric-digital-asset-risk-management" target="_blank">Devpost</a>
             </Menu.Item>
             <Menu.Item key="/registration-success">
               <Link onClick={()=>{setRoute("/registration-success")}} to="/registration-success">Start Now</Link>
