@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
+import { HashRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
@@ -209,7 +209,7 @@ function App(props) {
       <Layout>
         {/* ✏️ Edit the header and change the title to your project name */}
         <Header networkName={userProvider.connection.url !== "unknown:" ? NETWORK(selectedChainId) : null} />
-        <BrowserRouter>
+        <HashRouter>
 
           <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
             <Menu.Item key="/">
@@ -373,7 +373,7 @@ function App(props) {
       }
             
       </Footer>
-      </BrowserRouter>
+      </HashRouter>
     </Layout>
     </div>
   );
