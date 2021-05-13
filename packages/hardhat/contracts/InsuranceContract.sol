@@ -16,11 +16,13 @@ contract InsuranceContract is Ownable {
     uint256 public amountInsured;
     bool public paid;
     bool public supportsDonations;
-    IERC20 private asset;
-    ERC20 private reserveToken;
+
     address public beneficiary;
     address private reserveTokenAddress;
-    
+
+    IERC20 private asset;
+    ERC20 private reserveToken;
+        
     ILiquidityProtocol private liquidityProtocol;
     LiquidityProtocolInsurance private liquidityProtocolInsurance;
     
