@@ -112,7 +112,7 @@ contract LiquidityProtocolInsurance is Ownable{
         uint liquidityAssetPairIdentifier = registerLiquidityAssetPair(pair);
 
         //Send liquidity tokens to the Insurance Contract - 10% which will remain in this contract
-        uint256 amountToKeep = (_amountInsured * 5) / 100;        
+        uint256 amountToKeep = _amountInsured.mul(5).div(100);        
         IERC20(liquidityProtocol.getReserveTokenAddress(tusdTokenAddress)).transfer(address(insuranceContract), _amountInsured - amountToKeep);
         
         
