@@ -12,28 +12,38 @@ import "./InsuranceContract.sol";
 
 contract LiquidityProtocolInsurance is Ownable{
 
+    //Library for safe math operations (overflow, underflow)
     using SafeMath for uint256;
 
+    //Stores the asset pair: Liquidity Protocol Address + The latest reserve we queried
     struct LiquidityAssetPair{
         address liquidityProtocol;
         uint256 latestReserve;
     }
 
+    //Event when an insurance policy is created
     event InsurancePolicyCreation (
         address indexed beneficiary,
         address indexed insuranceContractAddress
     );
     
+    //Event when we pay back the beneficiary
     event Payout (
         address indexed beneficiary,
         address indexed insuranceContractAddress,
         uint256 amountPaid
     );
 
+    //TUSD Proof-of-reserve Feed
     AggregatorV3Interface internal tusdReserveFeed;
+    //TUSD Proof-of-Supply Feed
     AggregatorV3Interface internal tusdSupplyFeed;
 
+    //TUSD Token Address
+    //TODO: Make this dynamic
     address public tusdTokenAddress; 
+
+    //Donation address
     address public donationAddress;
     uint256 constant public MAXIMUM_RESERVE_DECREASE_PERCENTAGE = 75;
 
@@ -58,6 +68,8 @@ contract LiquidityProtocolInsurance is Ownable{
         
     }
 
+    /*----------  MODIFIERS  ----------*/
+
     modifier validateLiquidityProtocolAddress(address _liquidityProtocolAddress) {
         bool found = false;
         for(uint i = 0; i < liquidityProtocolImplementations.length; i++){
@@ -68,6 +80,8 @@ contract LiquidityProtocolInsurance is Ownable{
         require(found, "Liquidity Protocol address not found in the whitelist");
         _;
     }
+
+    /*----------  PUBLIC FUNCTIONS  ----------*/
 
     function registerInsurancePolicy(
         uint256 _amountInsured,
@@ -114,6 +128,13 @@ contract LiquidityProtocolInsurance is Ownable{
         emit InsurancePolicyCreation(msg.sender, insuranceContractAddress);
     }
 
+
+    function withdraw(address _insuranceContractAddress) external {
+        InsuranceContract insuranceContract = InsuranceContract(_insuranceContractAddress);
+        require(msg.sender == insuranceContract.beneficiary(), "only a beneficiary can trigger a withdrawal");
+        insuranceContract.withdraw();
+    }
+
     function getInsurancePolicyAddresses() public view returns(address[] memory) {
         return insuranceContractOwnerships[msg.sender];
     }
@@ -124,19 +145,6 @@ contract LiquidityProtocolInsurance is Ownable{
 
     function getTUSDReserveFeed() external view returns(address) {
         return address(tusdReserveFeed);
-    }
-
-    // ADMIN FUNCTIONS
-    function setTUSDSupplyFeed(address _tusdSupplyFeedAddress) external onlyOwner {
-        tusdSupplyFeed = AggregatorV3Interface(_tusdSupplyFeedAddress);
-    }
-
-    function setTUSDReserveFeed(address _tusdReserveFeedAddress) external onlyOwner {
-        tusdReserveFeed = AggregatorV3Interface(_tusdReserveFeedAddress);
-    }
-
-    function setDonationAddress(address _donationAddress) external onlyOwner {
-        donationAddress = _donationAddress;
     }
 
     function checkStatusForUnstableTUSDPeg() public view returns (bool) {
@@ -156,13 +164,21 @@ contract LiquidityProtocolInsurance is Ownable{
         return shouldMakeTransaction;
     }
 
-    function withdraw(address _insuranceContractAddress) external {
-        InsuranceContract insuranceContract = InsuranceContract(_insuranceContractAddress);
-        require(msg.sender == insuranceContract.beneficiary(), "only a beneficiary can trigger a withdrawal");
-        insuranceContract.withdraw();
+    /*----------  ADMINISTRATOR ONLY FUNCTIONS  ----------*/
+    
+    function setTUSDSupplyFeed(address _tusdSupplyFeedAddress) external onlyOwner {
+        tusdSupplyFeed = AggregatorV3Interface(_tusdSupplyFeedAddress);
     }
 
-    // CALLED EXTERNALLY    
+    function setTUSDReserveFeed(address _tusdReserveFeedAddress) external onlyOwner {
+        tusdReserveFeed = AggregatorV3Interface(_tusdReserveFeedAddress);
+    }
+
+    function setDonationAddress(address _donationAddress) external onlyOwner {
+        donationAddress = _donationAddress;
+    }
+
+    /*----------  ADMINISTRATOR ONLY FUNCTIONS (TASKS)  ----------*/  
     function checkForSignificantReserveDecreaseAndPay() public onlyOwner {
         for(uint liquidityAssetPairsIdx = 0; liquidityAssetPairsIdx < liquidityAssetPairs.length; liquidityAssetPairsIdx++){
             LiquidityAssetPair storage pair = liquidityAssetPairs[liquidityAssetPairsIdx];
@@ -205,7 +221,7 @@ contract LiquidityProtocolInsurance is Ownable{
     }
 
 
-    // PRIVATE FUNCTIONS
+    /*----------  PRIVATE FUNCTIONS  ----------*/
     function payAllInsuranceContracts() private {
         for(uint256 i = 0; i < insuranceContracts.length; i++){     
             payInsuranceContract(insuranceContracts[i]);
