@@ -3,7 +3,9 @@ const fs = require("fs");
 const chalk = require("chalk");
 require('dotenv').config();
 require("@nomiclabs/hardhat-waffle");
-require("@tenderly/hardhat-tenderly")
+require("@tenderly/hardhat-tenderly");
+require("hardhat-gas-reporter");
+
 
 require("@nomiclabs/hardhat-etherscan");
 
@@ -21,7 +23,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = "localhost";
+const defaultNetwork = "kovan";
 
 function mnemonic() {
   try {
