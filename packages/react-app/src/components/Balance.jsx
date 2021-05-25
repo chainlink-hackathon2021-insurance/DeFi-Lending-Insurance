@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { formatEther } from "@ethersproject/units";
 import { usePoller } from "eth-hooks";
-
+import { useBalance } from "../hooks"
 /*
   ~ What it does? ~
 
@@ -31,26 +31,9 @@ import { usePoller } from "eth-hooks";
 
 export default function Balance(props) {
   const [dollarMode, setDollarMode] = useState(true);
-  const [balance, setBalance] = useState();
+  const [listening, setListening] = useState(false);
 
-  const getBalance = async () => {
-    if (props.address && props.provider) {
-      try {
-        const newBalance = await props.provider.getBalance(props.address);
-        setBalance(newBalance);
-      } catch (e) {
-        console.log(e);
-      }
-    }
-  };
-
-  usePoller(
-    () => {
-      getBalance();
-    },
-    props.pollTime ? props.pollTime : 1999,
-  );
-
+  const balance = useBalance(props.provider, props.address)
   let floatBalance = parseFloat("0.00");
 
   let usingBalance = balance;
