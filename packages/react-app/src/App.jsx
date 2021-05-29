@@ -15,43 +15,14 @@ import { Dashboard, DebugPanel, RegistrationSuccess, ReviewAndPurchase, SmartCon
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 const {   Footer } = Layout;
 
-/*
-    Welcome to 🏗 scaffold-eth !
-
-    Code:
-    https://github.com/austintgriffith/scaffold-eth
-
-    Support:
-    https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA
-    or DM @austingriffith on twitter or telegram
-
-    You should get your own Infura.io ID and put it in `constants.js`
-    (this is your connection to the main Ethereum network for ENS etc.)
-
-
-    🌏 EXTERNAL CONTRACTS:
-    You can also bring in contract artifacts in `constants.js`
-    (and then use the `useExternalContractLoader()` hook!)
-*/
-
-
 /// 📡 What chain are your contracts deployed to?
 const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
 
-
-
 // 🛰 providers
 if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
-// const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
-// const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
-//
-// attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
-const scaffoldEthProvider = new StaticJsonRpcProvider("https://rpc.scaffoldeth.io:48544");
-const mainnetInfura = new StaticJsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID)
-// ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_I
 
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = targetNetwork.rpcUrl;
@@ -67,55 +38,29 @@ const blockExplorer = targetNetwork.blockExplorer;
 
 function App(props) {
 
-  const mainnetProvider = (scaffoldEthProvider && scaffoldEthProvider._network) ? scaffoldEthProvider : mainnetInfura
-  if(DEBUG) console.log("🌎 mainnetProvider",mainnetProvider)
-
   const [injectedProvider, setInjectedProvider] = useState(null);
-  /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
-  const price = useExchangePrice(targetNetwork,mainnetProvider);
 
+  
+  /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
+  //const price = useExchangePrice(targetNetwork,mainnetProvider);
+  
   /* 🔥 This hook will get the price of Gas from ⛽️ EtherGasStation */
-  const gasPrice = useGasPrice(targetNetwork,"fast");
-  // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
-  const userProvider = useUserProvider(injectedProvider, localProvider);
-  const address = useUserAddress(userProvider);
+  const gasPrice = useGasPrice({},"fast");
+  // Use your injected provider from 🦊 Metamask 
+  const address = useUserAddress(injectedProvider);
   if(DEBUG) console.log("👩‍💼 selected address:",address)
 
-  // You can warn the user if you would like them to be on a specific network
-  let localChainId = localProvider && localProvider._network && localProvider._network.chainId
-  if(DEBUG) console.log("🏠 localChainId",localChainId)
-
-  let selectedChainId = userProvider && userProvider._network && userProvider._network.chainId
+  let selectedChainId = injectedProvider && injectedProvider._network && injectedProvider._network.chainId
   if(DEBUG) console.log("🕵🏻‍♂️ selectedChainId:",selectedChainId)
 
-    // If you want to call a function on a new block
-  useOnBlock(mainnetProvider, () => {
-      console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`)
-  })
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
   // The transactor wraps transactions and provides notificiations
-  const tx = Transactor(userProvider, gasPrice)
-
-  // Faucet Tx can be used to send funds from the faucet
-  const faucetTx = Transactor(localProvider, gasPrice)
-
-  // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
-  const yourLocalBalance = useBalance(localProvider, address);
-  if(DEBUG) console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
-
-  // Just plug in different 🛰 providers to get your balance on different chains:
-  const yourMainnetBalance = useBalance(mainnetProvider, address);
-  if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
+  const tx = Transactor(injectedProvider, gasPrice)
 
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
-  const writeContracts = useContractLoader(userProvider)
+  const writeContracts = useContractLoader(injectedProvider)
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
-
-  /*
-  const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
-  console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
-  */
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -127,31 +72,12 @@ function App(props) {
       loadWeb3Modal();
     }
   }, [loadWeb3Modal]);
-
+  
   const [route, setRoute] = useState();
   useEffect(() => {
     setRoute(window.location.pathname)
   }, [setRoute]);
 
-  let faucetHint = ""
-  const faucetAvailable = localProvider && localProvider.connection && localProvider.connection.url && localProvider.connection.url.indexOf(window.location.hostname)>=0 && !process.env.REACT_APP_PROVIDER && price > 1;
-
-  const [ faucetClicked, setFaucetClicked ] = useState( false );
-  if(!faucetClicked&&localProvider&&localProvider._network&&localProvider._network.chainId==31337&&yourLocalBalance&&formatEther(yourLocalBalance)<=0){
-    faucetHint = (
-      <div style={{padding:16}}>
-        <Button type={"primary"} onClick={()=>{
-          faucetTx({
-            to: address,
-            value: parseEther("0.01"),
-          });
-          setFaucetClicked(true)
-        }}>
-          💰 Grab funds from the faucet ⛽️
-        </Button>
-      </div>
-    )
-  }
 
   /* APPLICATION SPECIFIC STATES START HERE */
   const [liquidityProtocolToAddressMap, setLiquidityProtocolToAddressMap] = useState({});
@@ -212,7 +138,7 @@ function App(props) {
     <div className="App">
       <Layout>
         {/* ✏️ Edit the header and change the title to your project name */}
-        <Header networkName={userProvider.connection.url !== "unknown:" ? NETWORK(selectedChainId) : null} />
+        <Header networkName={injectedProvider && injectedProvider.connection.url !== "unknown:" ? NETWORK(selectedChainId) : null} />
         <HashRouter>
 
           <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
@@ -228,9 +154,11 @@ function App(props) {
             <Menu.Item key="/registration-success">
               <Link onClick={()=>{setRoute("/registration-success")}} to="/registration-success">Start Now</Link>
             </Menu.Item>
-            <Menu.Item key="/dashboard">
-              <Link onClick={()=>{setRoute("/dashboard")}} to="/dashboard">Dashboard</Link>
-            </Menu.Item>
+            {injectedProvider && 
+              <Menu.Item key="/dashboard">
+                <Link onClick={()=>{setRoute("/dashboard")}} to="/dashboard">Dashboard</Link>
+              </Menu.Item>
+            }
           </Menu>
 
           <Switch>
@@ -239,12 +167,24 @@ function App(props) {
                 setRoute={setRoute}
               />
             </Route>
+
+            <Route path="/registration-success">
+              <RegistrationSuccess 
+                provider={injectedProvider}
+                address={address} 
+                setRoute={setRoute}
+                liquidityProtocol={liquidityProtocol}
+                setLiquidityProtocol={setLiquidityProtocol}
+                />
+            </Route>
+            {injectedProvider && 
+            <>
             <Route exact path="/debug">
               <DebugPanel
                 tx={tx}
                 writeContracts={writeContracts}
                 tusdAddress={tusdAddress}
-                provider={userProvider}
+                provider={injectedProvider}
                 mockPoRPoSAddresses={mockPoRPoSAddresses}
                 realPoRPoSAddresses={realPoRPoSAddresses}
               />
@@ -252,8 +192,8 @@ function App(props) {
             <Route exact path="/debug/liquidityProtocolInsurance">
               <Contract
                 name="LiquidityProtocolInsurance"
-                signer={userProvider.getSigner()}
-                provider={userProvider}
+                signer={injectedProvider.getSigner()}
+                provider={injectedProvider}
                 address={address}
                 blockExplorer={blockExplorer}
               />
@@ -261,8 +201,8 @@ function App(props) {
             <Route path="/debug/mockTUSD">
               <Contract
                   name="TUSDMock"
-                  signer={userProvider.getSigner()}
-                  provider={userProvider}
+                  signer={injectedProvider.getSigner()}
+                  provider={injectedProvider}
                   address={address}
                   blockExplorer={blockExplorer}
                 />  
@@ -270,8 +210,8 @@ function App(props) {
             <Route path="/debug/liquidityProtocolMock">
               <Contract
                   name="LiquidityProtocolMock"
-                  signer={userProvider.getSigner()}
-                  provider={userProvider}
+                  signer={injectedProvider.getSigner()}
+                  provider={injectedProvider}
                   address={address}
                   blockExplorer={blockExplorer}
                 />  
@@ -279,21 +219,11 @@ function App(props) {
             <Route path="/debug/ReserveTokenMock">
               <Contract
                   name="ReserveTokenMock"
-                  signer={userProvider.getSigner()}
-                  provider={userProvider}
+                  signer={injectedProvider.getSigner()}
+                  provider={injectedProvider}
                   address={address}
                   blockExplorer={blockExplorer}
                 />  
-            </Route>
-
-            <Route path="/registration-success">
-              <RegistrationSuccess 
-                provider={userProvider}
-                address={address} 
-                setRoute={setRoute}
-                liquidityProtocol={liquidityProtocol}
-                setLiquidityProtocol={setLiquidityProtocol}
-                />
             </Route>
             <Route path="/smart-contract-details">
               <SmartContractDetails 
@@ -311,8 +241,8 @@ function App(props) {
                 tx={tx}
                 tusdAddress={tusdAddress}
                 setRoute={setRoute}
-                signer={userProvider.getSigner()}
-                provider={userProvider}
+                signer={injectedProvider.getSigner()}
+                provider={injectedProvider}
                 />
             </Route>
             <Route path="/successfully-connected">
@@ -322,13 +252,14 @@ function App(props) {
             <Route path="/dashboard">
               <Dashboard
                 writeContracts={writeContracts}
-                provider={userProvider}
-                signer={userProvider.getSigner()}
+                provider={injectedProvider}
+                signer={injectedProvider.getSigner()}
                 address={address}
                 tx={tx}
               />
             </Route>
-
+            </>
+            }
           </Switch>
        
 
@@ -339,36 +270,13 @@ function App(props) {
         <div style={{ position: "absolute", textAlign: "right", right: 0, top: 0, padding: 10 }}>
           <Account
             address={address}
-            localProvider={localProvider}
-            userProvider={userProvider}
-            mainnetProvider={mainnetProvider}
-            price={price}
+            provider={localProvider}
             web3Modal={web3Modal}
             loadWeb3Modal={loadWeb3Modal}
             logoutOfWeb3Modal={logoutOfWeb3Modal}
             blockExplorer={blockExplorer}
           />
-          {faucetHint}
         </div>
-
-        {userProvider.connection.url !== "unknown:" &&
-        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-
-          <Row align="middle" gutter={[4, 4]}>
-            <Col span={24}>
-              {
-
-                /*  if the local provider has a signer, let's show the faucet:  */
-                faucetAvailable ? (
-                  <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider}/>
-                ) : (
-                  ""
-                )
-              }
-            </Col>
-          </Row>
-        </div>
-      }
       
       <Footer style={{ textAlign: 'center' }}>
         {isAdmin &&    
@@ -406,10 +314,23 @@ const logoutOfWeb3Modal = async () => {
   }, 1);
 };
 
- window.ethereum && window.ethereum.on('chainChanged', chainId => {
-  setTimeout(() => {
-    window.location.reload();
-  }, 1);
-})
+/* eslint-disable */
+window.ethereum &&
+  window.ethereum.on("chainChanged", chainId => {
+    web3Modal.cachedProvider &&
+      setTimeout(() => {
+        window.location.reload();
+      }, 1);
+  });
+
+window.ethereum &&
+  window.ethereum.on("accountsChanged", accounts => {
+    web3Modal.cachedProvider &&
+      setTimeout(() => {
+        window.location.reload();
+      }, 1);
+  });
+/* eslint-enable */
+
 
 export default App;

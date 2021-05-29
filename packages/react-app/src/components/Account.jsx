@@ -40,11 +40,7 @@ import Wallet from "./Wallet";
 
 export default function Account({
   address,
-  userProvider,
-  localProvider,
-  mainnetProvider,
-  price,
-  minimized,
+  provider,
   web3Modal,
   loadWeb3Modal,
   logoutOfWeb3Modal,
@@ -72,7 +68,6 @@ export default function Account({
           style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
           shape="round"
           size="large"
-          /*type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time*/
           onClick={loadWeb3Modal}
         >
           connect
@@ -81,20 +76,19 @@ export default function Account({
     }
   }
 
-  const display = minimized ? (
+  const display = provider !== null ? (
     ""
   ) : (
     <span>
-      {address ? <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} /> : "Connecting..."}
-      <Balance address={address} provider={localProvider} price={price} />
-      <Wallet address={address} provider={userProvider} ensProvider={mainnetProvider} price={price} />
+      {address ? <Address address={address} ensProvider={provider} blockExplorer={blockExplorer} /> : "Connecting..."}
+      <Balance address={address} provider={provider} price={null} />
+      <Wallet address={address} provider={provider} ensProvider={provider} price={null} />
     </span>
   );
 
   return (
     <div>
-      
-      {((userProvider && userProvider.connection.url !== "unknown:") || contract) && display }
+      {display}
       {modalButtons}
     </div>
   );
