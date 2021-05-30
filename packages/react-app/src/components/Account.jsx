@@ -76,15 +76,15 @@ export default function Account({
     }
   }
 
-  const display = provider !== null ? (
-    ""
-  ) : (
+  const display = provider && address ? (
     <span>
-      {address ? <Address address={address} ensProvider={provider} blockExplorer={blockExplorer} /> : "Connecting..."}
+      <Address address={address} ensProvider={provider} blockExplorer={blockExplorer} />
       <Balance address={address} provider={provider} price={null} />
       <Wallet address={address} provider={provider} ensProvider={provider} price={null} />
     </span>
-  );
+  ):(
+    ""
+  ) ;
 
   return (
     <div>

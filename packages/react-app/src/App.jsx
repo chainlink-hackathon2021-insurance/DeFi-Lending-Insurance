@@ -7,12 +7,11 @@ import { Row, Col, Button, Menu, Switch as SwitchD, Layout } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useBalance, useOnBlock } from "./hooks";
+import { useExchangePrice, useGasPrice, useContractLoader, useBalance, useOnBlock } from "./hooks";
 import { Header, Account, Faucet, Contract, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
-import { formatEther, parseEther } from "@ethersproject/units";
 import { Dashboard, DebugPanel, RegistrationSuccess, ReviewAndPurchase, SmartContractDetails, SuccessfullyConnected, Home } from "./views"
-import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
+import {  NETWORKS } from "./constants";
 const {   Footer } = Layout;
 
 /// 📡 What chain are your contracts deployed to?
@@ -23,13 +22,6 @@ const DEBUG = true
 
 // 🛰 providers
 if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
-
-// 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = targetNetwork.rpcUrl;
-// as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
-if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new StaticJsonRpcProvider(localProviderUrlFromEnv);
 
 
 // 🔭 block explorer URL
@@ -66,6 +58,11 @@ function App(props) {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
   }, [setInjectedProvider]);
+
+  useEffect(() => {
+      if(injectedProvider !== null)
+      console.log("Network: ", injectedProvider);
+  }, [injectedProvider])
 
   useEffect(() => {
     if (web3Modal.cachedProvider) {
@@ -138,7 +135,7 @@ function App(props) {
     <div className="App">
       <Layout>
         {/* ✏️ Edit the header and change the title to your project name */}
-        <Header networkName={injectedProvider && injectedProvider.connection.url !== "unknown:" ? NETWORK(selectedChainId) : null} />
+        <Header networkName={injectedProvider && injectedProvider.connection.url !== "unknown:" ? injectedProvider._network?.name : null} />
         <HashRouter>
 
           <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
@@ -270,7 +267,7 @@ function App(props) {
         <div style={{ position: "absolute", textAlign: "right", right: 0, top: 0, padding: 10 }}>
           <Account
             address={address}
-            provider={localProvider}
+            provider={injectedProvider}
             web3Modal={web3Modal}
             loadWeb3Modal={loadWeb3Modal}
             logoutOfWeb3Modal={logoutOfWeb3Modal}
@@ -299,10 +296,7 @@ const web3Modal = new Web3Modal({
   cacheProvider: true, // optional
   providerOptions: {
     walletconnect: {
-      package: WalletConnectProvider, // required
-      options: {
-        infuraId: INFURA_ID,
-      },
+      package: WalletConnectProvider // required
     },
   },
 });
