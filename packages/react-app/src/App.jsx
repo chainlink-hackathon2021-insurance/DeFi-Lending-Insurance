@@ -12,26 +12,16 @@ import { Header, Account, Faucet, Contract, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { Dashboard, DebugPanel, RegistrationSuccess, ReviewAndPurchase, SmartContractDetails, SuccessfullyConnected, Home } from "./views"
 import {  NETWORKS } from "./constants";
-const {   Footer } = Layout;
-
-/// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const { Footer } = Layout;
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
 
-// 🛰 providers
-if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
-
-
-// 🔭 block explorer URL
-const blockExplorer = targetNetwork.blockExplorer;
-
-
 function App(props) {
 
   const [injectedProvider, setInjectedProvider] = useState(null);
-
+  const [network, setNetwork] = useState(null);
+  const [blockExplorer, setBlockExplorer] = useState(null);
   
   /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
   //const price = useExchangePrice(targetNetwork,mainnetProvider);
@@ -41,9 +31,6 @@ function App(props) {
   // Use your injected provider from 🦊 Metamask 
   const address = useUserAddress(injectedProvider);
   if(DEBUG) console.log("👩‍💼 selected address:",address)
-
-  let selectedChainId = injectedProvider && injectedProvider._network && injectedProvider._network.chainId
-  if(DEBUG) console.log("🕵🏻‍♂️ selectedChainId:",selectedChainId)
 
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
@@ -56,12 +43,41 @@ function App(props) {
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
-    setInjectedProvider(new Web3Provider(provider));
+    const web3Provider = new Web3Provider(provider);
+    const networkFromProvider = await web3Provider.getNetwork();
+    if(DEBUG) console.log("Network: ", networkFromProvider);
+    const network = NETWORKS[networkFromProvider.chainId];
+    if(network) {
+      setNetwork(NETWORKS[networkFromProvider.chainId]);
+      setBlockExplorer(NETWORKS[networkFromProvider.chainId].blockExplorer);
+      web3Provider.validNetwork = true;
+    }
+    else {
+      web3Provider.validNetwork = false;
+    }
+    setInjectedProvider(web3Provider);
   }, [setInjectedProvider]);
 
   useEffect(() => {
-      if(injectedProvider !== null)
-      console.log("Network: ", injectedProvider);
+    const initProvider = async () => {
+      if(injectedProvider){
+                
+        window.ethereum.on("chainChanged", chainId => {
+          web3Modal.cachedProvider &&
+            setTimeout(() => {
+              window.location.reload();
+            }, 1);
+        });
+
+        window.ethereum.on("accountsChanged", accounts => {
+          web3Modal.cachedProvider &&
+            setTimeout(() => {
+              window.location.reload();
+            }, 1);
+        });
+      }
+    }
+    initProvider();      
   }, [injectedProvider])
 
   useEffect(() => {
@@ -72,9 +88,9 @@ function App(props) {
   
   const [route, setRoute] = useState();
   useEffect(() => {
-    setRoute(window.location.pathname)
+    const slashIndex = window.location.hash.indexOf('/');
+    setRoute(window.location.hash.substr(slashIndex));
   }, [setRoute]);
-
 
   /* APPLICATION SPECIFIC STATES START HERE */
   const [liquidityProtocolToAddressMap, setLiquidityProtocolToAddressMap] = useState({});
@@ -85,7 +101,8 @@ function App(props) {
   const [isAdmin, setIsAdmin] = useState(false);
   useEffect(() => {
     if(!writeContracts) { return; }
-    if(targetNetwork.name === "localhost"){
+    if(!network) { return; }
+    if(network.name === "localhost"){
       setLiquidityProtocolToAddressMap({
         "AAVE":  writeContracts.LiquidityProtocolMock.address,
         "Mock" : writeContracts.LiquidityProtocolMock.address,
@@ -100,7 +117,7 @@ function App(props) {
       });
       setTusdAddress(writeContracts.TUSDMock.address);
     }
-    else if(targetNetwork.name === "kovan"){
+    else if(network.name === "kovan"){
       setLiquidityProtocolToAddressMap({
         "AAVE":  writeContracts.AaveLiquidityProtocol.address,
         "Mock" : writeContracts.LiquidityProtocolMock.address,
@@ -115,10 +132,11 @@ function App(props) {
       });
       setTusdAddress("0x016750AC630F711882812f24Dba6c95b9D35856d");
     }
-  }, [writeContracts]);
+  }, [writeContracts, network]);
 
   useEffect(() => {
     if(!writeContracts) { return; }
+    if(!injectedProvider || !injectedProvider.isValidNetwork) { return; }
     const detectAdmin = async () => {
         const admin = await writeContracts.LiquidityProtocolInsurance.owner();    
         if(address === admin){
@@ -135,7 +153,7 @@ function App(props) {
     <div className="App">
       <Layout>
         {/* ✏️ Edit the header and change the title to your project name */}
-        <Header networkName={injectedProvider && injectedProvider.connection.url !== "unknown:" ? injectedProvider._network?.name : null} />
+        <Header networkName={network && network.name} />
         <HashRouter>
 
           <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
@@ -308,23 +326,6 @@ const logoutOfWeb3Modal = async () => {
   }, 1);
 };
 
-/* eslint-disable */
-window.ethereum &&
-  window.ethereum.on("chainChanged", chainId => {
-    web3Modal.cachedProvider &&
-      setTimeout(() => {
-        window.location.reload();
-      }, 1);
-  });
-
-window.ethereum &&
-  window.ethereum.on("accountsChanged", accounts => {
-    web3Modal.cachedProvider &&
-      setTimeout(() => {
-        window.location.reload();
-      }, 1);
-  });
-/* eslint-enable */
 
 
 export default App;

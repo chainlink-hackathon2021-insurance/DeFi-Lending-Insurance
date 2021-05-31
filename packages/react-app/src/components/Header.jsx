@@ -8,7 +8,7 @@ export default function Header({networkName}) {
       <div>
         <PageHeader
           title="Parametric Digital Asset Risk Management"
-          subTitle={networkName ? '@' + networkName.name : null}
+          subTitle={networkName ? '@' + networkName : null}
           avatar={{src: process.env.PUBLIC_URL + '/logo192.png', size: 50}}
         />
       </div>

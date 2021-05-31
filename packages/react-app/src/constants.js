@@ -1,6 +1,3 @@
-// MY INFURA_ID, SWAP IN YOURS FROM https://infura.io/dashboard/ethereum
-export const INFURA_ID = "";
-
 //BLOCKNATIVE ID FOR Notify.js:
 export const BLOCKNATIVE_DAPPID = "db183622-7acf-4919-9ff7-caea2585dc30"
 
@@ -15,53 +12,52 @@ export const NETWORK = (chainId)=>{
 }
 
 export const NETWORKS = {
-    localhost: {
+    31337: {
         name: "localhost",
         color: '#666666',
         chainId: 31337,
         blockExplorer: '',
         rpcUrl: "http://" + window.location.hostname + ":8545",
+        valid: true
     },
-    mainnet: {
+    /*
+    1: {
         name: "mainnet",
         color: '#ff8b9e',
         chainId: 1,
-        rpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
         blockExplorer: "https://etherscan.io/",
     },
-    kovan: {
+    */
+    42: {
         name: "kovan",
         color: '#7003DD',
         chainId: 42,
-        rpcUrl: `https://kovan.infura.io/v3/${INFURA_ID}`,
         blockExplorer: "https://kovan.etherscan.io/",
         faucet: "https://gitter.im/kovan-testnet/faucet",//https://faucet.kovan.network/
     },
-    rinkeby: {
+    /*
+    4: {
         name: "rinkeby",
         color: '#e0d068',
         chainId: 4,
-        rpcUrl: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
         faucet: "https://faucet.rinkeby.io/",
         blockExplorer: "https://rinkeby.etherscan.io/",
     },
-    ropsten: {
+    3: {
         name: "ropsten",
         color: '#F60D09',
         chainId: 3,
         faucet: "https://faucet.ropsten.be/",
         blockExplorer: "https://ropsten.etherscan.io/",
-        rpcUrl: `https://ropsten.infura.io/v3/${INFURA_ID}`,
     },
-    goerli: {
+    5: {
         name: "goerli",
         color: '#0975F6',
         chainId: 5,
         faucet: "https://goerli-faucet.slock.it/",
         blockExplorer: "https://goerli.etherscan.io/",
-        rpcUrl: `https://goerli.infura.io/v3/${INFURA_ID}`,
     },
-    xdai: {
+    100: {
         name: "xdai",
         color: '#48a9a6',
         chainId: 100,
@@ -71,7 +67,7 @@ export const NETWORKS = {
         faucet: "https://xdai-faucet.top/",
         blockExplorer: "https://blockscout.com/poa/xdai/",
     },
-    matic: {
+    137: {
         name: "matic",
         color: '#2bbdf7',
         chainId: 137,
@@ -81,7 +77,7 @@ export const NETWORKS = {
         faucet: "https://faucet.matic.network/",
         blockExplorer: "https://explorer-mainnet.maticvigil.com//",
     },
-    mumbai: {
+    80001: {
         name: "mumbai",
         color: '#92D9FA',
         chainId: 80001,
@@ -90,5 +86,5 @@ export const NETWORKS = {
         rpcUrl: "https://rpc-mumbai.maticvigil.com",
         faucet: "https://faucet.matic.network/",
         blockExplorer: "https://mumbai-explorer.matic.today/",
-    }
+    }*/
 }

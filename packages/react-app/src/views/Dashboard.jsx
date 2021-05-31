@@ -10,7 +10,7 @@ import { parseEther, formatEther } from "@ethersproject/units";
 
 const { Column, ColumnGroup } = Table;
 
-export default function Dashboard({writeContracts, provider, address, tx, signer}) {
+export default function Dashboard({writeContracts, provider, address, tx, signer, isValidNetwork}) {
     
     const insuranceContractAbi = [
         "function getReserveTokenBalance() external view returns(uint256)",
