@@ -87,9 +87,11 @@ function App(props) {
   }, [loadWeb3Modal]);
   
   const [route, setRoute] = useState();
+
   useEffect(() => {
     const slashIndex = window.location.hash.indexOf('/');
-    setRoute(window.location.hash.substr(slashIndex));
+    const location = window.location.hash.substr(slashIndex);
+    setRoute(location);
   }, [setRoute]);
 
   /* APPLICATION SPECIFIC STATES START HERE */
@@ -136,7 +138,7 @@ function App(props) {
 
   useEffect(() => {
     if(!writeContracts) { return; }
-    if(!injectedProvider || !injectedProvider.isValidNetwork) { return; }
+    if(!injectedProvider || !injectedProvider.validNetwork) { return; }
     const detectAdmin = async () => {
         const admin = await writeContracts.LiquidityProtocolInsurance.owner();    
         if(address === admin){
@@ -153,7 +155,7 @@ function App(props) {
     <div className="App">
       <Layout>
         {/* ✏️ Edit the header and change the title to your project name */}
-        <Header networkName={network && network.name} />
+        <Header networkName={network && network.name} networks={NETWORKS} />
         <HashRouter>
 
           <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">

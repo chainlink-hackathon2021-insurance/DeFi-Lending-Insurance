@@ -10,7 +10,7 @@ import { parseEther, formatEther } from "@ethersproject/units";
 
 const { Column, ColumnGroup } = Table;
 
-export default function Dashboard({writeContracts, provider, address, tx, signer, isValidNetwork}) {
+export default function Dashboard({writeContracts, provider, address, tx, signer}) {
     
     const insuranceContractAbi = [
         "function getReserveTokenBalance() external view returns(uint256)",
@@ -52,16 +52,12 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
             });
             
         }
-        console.log("The records");
-        console.log(records);
         return records;
     }
-  
       
     return (
         <div style={{border:"1px solid #cccccc", padding:16, width:"80%", margin:"auto",marginTop:64}}>
             <h1>Dashboard</h1>
-           
             <Table dataSource={dataSource}>
                 <Column title="Address" dataIndex="address" key="address" />
                 <Column title="Current Balance" dataIndex="balance" key="balance" />
