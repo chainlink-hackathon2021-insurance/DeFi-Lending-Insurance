@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { ContractSteps } from "../components";
 import { Row, Col, Button, Form, Select } from "antd";
@@ -24,6 +24,15 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
           span: 16,
         },
       };
+    
+    useEffect(() => {
+        if(!provider.validNetwork){ 
+            alert("Invalid Network");
+            window.location = "/";
+            return;
+        }
+    }, [provider]);
+    
       
   return (
       <div style={{border:"1px solid #cccccc", padding:16, width:"80%", margin:"auto",marginTop:64}}>

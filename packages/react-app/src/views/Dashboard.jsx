@@ -30,8 +30,15 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
             const records = await fetchRecords();    
             setDataSource(records);
         }
+        if(!provider.validNetwork){ 
+            alert("Invalid Network");
+            window.location = "/";
+            return;
+        }
         fetchData();
       }, [contractAddresses]);
+
+    
 
     async function fetchRecords(){
         let records = [];
