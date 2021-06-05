@@ -104,6 +104,7 @@ function App(props) {
   useEffect(() => {
     if(!writeContracts) { return; }
     if(!network) { return; }
+    //TODO: How can we make this better?
     if(network.name === "localhost"){
       setLiquidityProtocolToAddressMap({
         "AAVE":  writeContracts.LiquidityProtocolMock.address,
@@ -121,12 +122,12 @@ function App(props) {
     }
     else if(network.name === "kovan"){
       setLiquidityProtocolToAddressMap({
-        "AAVE":  writeContracts.AaveLiquidityProtocol.address,
-        "Mock" : writeContracts.LiquidityProtocolMock.address,
+        "AAVE":  "0x823EF230416641B4EE68B9e89E28D66b4276870B", 
+        "Mock" : "0x1E3Fbf334a6dAc73ec62Aa679419A4549c900031",
       });
       setMockPoRPoSAddresses({
-        "reserve" : writeContracts.MockTUSDReserveFeed.address,
-        "supply" : writeContracts.MockTUSDSupplyFeed.address
+        "reserve" : "0x2BF34aA6919ACef885155DB806886a0B3Ee2620C",
+        "supply" : "0x84D1F5fDcddD6E853B17581852B665E0171404d4"
       });
       setRealPoRPoSAddresses({
         "reserve" : "0xdD6Dbd1861971455C20d5bd00DeA4DDE704f3554",
