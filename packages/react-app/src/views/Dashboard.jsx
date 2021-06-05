@@ -30,7 +30,7 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
             const records = await fetchRecords();    
             setDataSource(records);
         }
-        if(!provider.validNetwork){ 
+        if(provider && !provider.validNetwork){ 
             alert("Invalid Network");
             window.location = "/";
             return;

@@ -19,7 +19,7 @@ export default function ReviewAndPurchase({setRoute, depositAmount, liquidityPro
     ];
 
     useEffect(() => {
-        if(!provider.validNetwork){ 
+        if(provider && !provider.validNetwork){ 
             alert("Invalid Network");
             window.location = "/";
             return;

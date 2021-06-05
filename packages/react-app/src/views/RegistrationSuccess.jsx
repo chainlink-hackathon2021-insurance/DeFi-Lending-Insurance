@@ -26,7 +26,7 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
       };
     
     useEffect(() => {
-        if(!provider.validNetwork){ 
+        if(provider && !provider.validNetwork){ 
             alert("Invalid Network");
             window.location = "/";
             return;
