@@ -3,12 +3,10 @@
 import { useContractReader } from "../hooks";
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
-import { ContractSteps } from "../components";
 import { Table, Space, Button } from "antd";
-import { parseEther, formatEther } from "@ethersproject/units";
+import { formatEther } from "@ethersproject/units";
 
-const { Column, ColumnGroup } = Table;
+const { Column } = Table;
 
 export default function Dashboard({writeContracts, provider, address, tx, signer}) {
     
@@ -27,7 +25,24 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
     
     useEffect(() => {
         const fetchData = async () => {
-            const records = await fetchRecords();    
+            let records = [];
+            for(let contractIndex in contractAddresses){
+                let contractAddress = contractAddresses[contractIndex];
+                let tempContractIn = new ethers.Contract(contractAddress, insuranceContractAbi, provider);
+                let tokenBalance = await tempContractIn.getReserveTokenBalance();
+                let policyActive = await tempContractIn.isPolicyActive();
+                let denomination = await tempContractIn.getReserveTokenDenomination();
+                let supportsDonations = await tempContractIn.hasDonationsEnabled();
+                records.push({ 
+                    key: contractIndex,
+                    address: contractAddress,
+                    balance: formatEther(tokenBalance.toString()), 
+                    active: policyActive.toString(), 
+                    denomination: denomination,
+                    supportsDonations: supportsDonations.toString()
+                });
+                
+            }    
             setDataSource(records);
         }
         if(provider && !provider.validNetwork){ 
@@ -36,31 +51,7 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
             return;
         }
         fetchData();
-      }, [contractAddresses]);
-
-    
-
-    async function fetchRecords(){
-        let records = [];
-        for(let contractIndex in contractAddresses){
-            let contractAddress = contractAddresses[contractIndex];
-            let tempContractIn = new ethers.Contract(contractAddress, insuranceContractAbi, provider);
-            let tokenBalance = await tempContractIn.getReserveTokenBalance();
-            let policyActive = await tempContractIn.isPolicyActive();
-            let denomination = await tempContractIn.getReserveTokenDenomination();
-            let supportsDonations = await tempContractIn.hasDonationsEnabled();
-            records.push({ 
-                key: contractIndex,
-                address: contractAddress,
-                balance: formatEther(tokenBalance.toString()), 
-                active: policyActive.toString(), 
-                denomination: denomination,
-                supportsDonations: supportsDonations.toString()
-            });
-            
-        }
-        return records;
-    }
+      }, [contractAddresses, provider, insuranceContractAbi]);
       
     return (
         <div style={{border:"1px solid #cccccc", padding:16, width:"80%", margin:"auto",marginTop:64}}>

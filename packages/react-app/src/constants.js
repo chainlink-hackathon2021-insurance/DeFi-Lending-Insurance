@@ -5,7 +5,7 @@ export const BLOCKNATIVE_DAPPID = "db183622-7acf-4919-9ff7-caea2585dc30"
 // EXTERNAL CONTRACTS
 export const NETWORK = (chainId)=>{
   for(let n in NETWORKS){
-    if(NETWORKS[n].chainId==chainId){
+    if(NETWORKS[n].chainId === chainId){
       return NETWORKS[n]
     }
   }

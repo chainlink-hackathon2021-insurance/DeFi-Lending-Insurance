@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useContractReader } from "../hooks";
 import { BigNumber, ethers } from "ethers";
-import { parseEther, formatEther, commify } from "@ethersproject/units";
+import { formatEther, commify } from "@ethersproject/units";
 
 export default function DebugPanel({writeContracts, tx, tusdAddress, provider, mockPoRPoSAddresses, realPoRPoSAddresses}) {
 
@@ -40,7 +40,7 @@ export default function DebugPanel({writeContracts, tx, tusdAddress, provider, m
       setCurrentTusdReserve(commify(reserveData.answer.div(10**8).toString()));
     }
     fetchData();
-  }, [writeContracts]);
+  }, [writeContracts, aggregatorAbi, provider]);
 
 
 

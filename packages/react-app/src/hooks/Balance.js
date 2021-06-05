@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import usePoller from "./Poller";
 import useOnBlock from "./OnBlock";
 
@@ -28,7 +28,7 @@ const pollBalance = useCallback(async (provider, address) => {
       setBalance(newBalance);
     }
   }
-}, [provider, address]);
+}, [balance]);
 
 // Only pass a provider to watch on a block if there is no pollTime
 useOnBlock((pollTime === 0)&&provider, () => {

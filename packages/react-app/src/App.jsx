@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { HashRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
-import {  StaticJsonRpcProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
+import {  Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu, Switch as SwitchD, Layout } from "antd";
+import { Menu, Layout } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useContractLoader, useBalance, useOnBlock } from "./hooks";
-import { Header, Account, Faucet, Contract, ThemeSwitch } from "./components";
+import { useGasPrice, useContractLoader } from "./hooks";
+import { Header, Account, Contract, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { Dashboard, DebugPanel, RegistrationSuccess, ReviewAndPurchase, SmartContractDetails, SuccessfullyConnected, Home } from "./views"
 import {  NETWORKS } from "./constants";
@@ -147,7 +147,7 @@ function App(props) {
         }
     }
     detectAdmin();
-  }, [writeContracts]);
+  }, [writeContracts, address, injectedProvider]);
    
   const [ depositAmount, setDepositAmount ] = useState(100);
   const [ liquidityProtocol, setLiquidityProtocol ] = useState("AAVE");
@@ -164,10 +164,10 @@ function App(props) {
               <Link onClick={()=>{setRoute("/")}} to="/">Home</Link>
             </Menu.Item>
             <Menu.Item key="/github">
-              <a href="https://github.com/chainlink-hackathon2021-insurance" target="_blank">GitHub</a>
+              <a href="https://github.com/chainlink-hackathon2021-insurance" target="_blank" rel="noopener noreferrer">GitHub</a>
             </Menu.Item>
             <Menu.Item key="/devpost">
-              <a href="https://devpost.com/software/parametric-digital-asset-risk-management" target="_blank">Devpost</a>
+              <a href="https://devpost.com/software/parametric-digital-asset-risk-management" target="_blank" rel="noopener noreferrer">Devpost</a>
             </Menu.Item>
             <Menu.Item key="/registration-success">
               <Link onClick={()=>{setRoute("/registration-success")}} to="/registration-success">Start Now</Link>

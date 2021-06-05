@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { formatEther } from "@ethersproject/units";
-import { usePoller } from "eth-hooks";
 import { useBalance } from "../hooks"
 /*
   ~ What it does? ~
@@ -31,7 +30,6 @@ import { useBalance } from "../hooks"
 
 export default function Balance(props) {
   const [dollarMode, setDollarMode] = useState(true);
-  const [listening, setListening] = useState(false);
 
   const balance = useBalance(props.provider, props.address)
   let floatBalance = parseFloat("0.00");

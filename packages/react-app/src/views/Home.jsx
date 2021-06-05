@@ -1,9 +1,8 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 
-import React, { useState } from "react";
+import React from "react";
 import { useHistory } from "react-router-dom";
-import { ContractSteps } from "../components";
-import { Row, Col, Button, Form, Select } from "antd";
+import { Row, Col, Button } from "antd";
 
 export default function Home({setRoute}) {
     const history = useHistory();
@@ -13,7 +12,7 @@ export default function Home({setRoute}) {
       <div style={{border:"1px solid #cccccc", padding:16, width:"80%", margin:"auto",marginTop:64}}>
         <Row style={{marginTop: "60px"}}>
             <Col span={12}>
-                <img src="https://ipfs.io/ipfs/QmcEmU5LgyCXiRaaKuNYmbHbrypPEZxWJJm8HoaLT5Bmbu" />
+                <img alt="" src="https://ipfs.io/ipfs/QmcEmU5LgyCXiRaaKuNYmbHbrypPEZxWJJm8HoaLT5Bmbu" />
             </Col>
             <Col span={12} style={{textAlign: 'left'}}>
                 <h1>Risk Management <br /> Smart Contracts enable one to safely venture through Decentralized Finance.</h1>
@@ -34,14 +33,14 @@ export default function Home({setRoute}) {
               </div>
           </Col>
           <Col span={12}>
-            <img src="https://ipfs.io/ipfs/QmWDiATD2mbMDfyzTW3xMv5cwbvoEvWzoc2ribNBfCnMEi" />
+            <img alt="" src="https://ipfs.io/ipfs/QmWDiATD2mbMDfyzTW3xMv5cwbvoEvWzoc2ribNBfCnMEi" />
           </Col>
       </Row>
     </div>
     <div style={{border:"1px solid #cccccc", padding:16, width:"80%", margin:"auto",marginTop:64}}>
         <Row style={{marginTop: "60px"}}>
             <Col span={12}>
-                <img src="https://ipfs.io/ipfs/QmW1A1pcFN2QtRdrPAV15j6VZgAFPmzhbyrasZvqxdg1rH" />
+                <img alt="" src="https://ipfs.io/ipfs/QmW1A1pcFN2QtRdrPAV15j6VZgAFPmzhbyrasZvqxdg1rH" />
             </Col>
             <Col span={12} style={{textAlign: 'left'}}>
                 <h4>PARAMETRIC RISK MANAGEMENT</h4>

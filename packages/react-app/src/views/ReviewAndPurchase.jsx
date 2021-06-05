@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import { ContractSteps } from "../components";
 import { Row, Col, Button, Switch, Divider } from "antd";
 import { ethers } from "ethers";
-import { parseEther, formatEther } from "@ethersproject/units";
+import { parseEther } from "@ethersproject/units";
 
 export default function ReviewAndPurchase({setRoute, depositAmount, liquidityProtocol, writeContracts, tx, liquidityProtocolToAddressMap, tusdAddress, provider, signer}) {
     const history = useHistory();
@@ -60,7 +60,7 @@ export default function ReviewAndPurchase({setRoute, depositAmount, liquidityPro
             <h3>Terms and Conditions</h3>
             <p>An Upfront Payment is required to connect the wallet to the Smart Contract as a Service for improved risk management. Withdrawals or cancelations will take up to 48 hours due to limitations with the connected platform's "Available Liquidity." Subscription is good until cancelled.</p>
             <p>Cryptocurrency allows for improved transparency when it comes to charitable donations and organizations. If you are interested in supporting social causes using blockchain, consider making a charitable donation to giveth.io using a portion of your profits. </p>
-            <p>Would you like to automatically donate a 1% of your yearly profits to giveth.io? <Switch onChange={(val) => {setSupportsDonations(val)}} /> <a href="https://giveth.io/" target="_blank">Click here to learn more.</a></p>
+            <p>Would you like to automatically donate a 1% of your yearly profits to giveth.io? <Switch onChange={(val) => {setSupportsDonations(val)}} /> <a href="https://giveth.io/" target="_blank" rel="noopener noreferrer">Click here to learn more.</a></p>
         </div>
         <Row style={{marginTop: "60px"}}>
             <Col span={8}>

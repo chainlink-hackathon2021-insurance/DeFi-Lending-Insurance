@@ -31,5 +31,5 @@ export default function useOnBlock(provider, fn, args) {
         provider.off("block", listener)
     }
 }
-},[provider])
+},[provider, args, fn])
 }

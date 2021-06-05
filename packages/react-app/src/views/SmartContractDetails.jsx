@@ -1,9 +1,9 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useHistory } from "react-router-dom";
 import { ContractSteps } from "../components";
-import { Row, Col, Button, Form, Select, InputNumber, Divider } from "antd";
+import { Row, Col, Button, Form, InputNumber, Divider } from "antd";
 
 export default function SmartContractDetails({setRoute, depositAmount, setDepositAmount, liquidityProtocol}) {
     const history = useHistory();
