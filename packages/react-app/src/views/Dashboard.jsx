@@ -21,7 +21,7 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
         "function hasDonationsEnabled() external view returns(bool)"
     ];
 
-    const contractAddresses = useContractReader(writeContracts, "LiquidityProtocolInsurance", "getInsurancePolicyAddresses");
+    const contractAddresses = useContractReader(writeContracts, "LiquidityProtocolInsurance", "getInsurancePolicyAddresses", null, 1000);
     
     const [dataSource, setDataSource]  = useState([]);
     
