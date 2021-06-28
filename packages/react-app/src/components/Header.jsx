@@ -1,33 +1,26 @@
 import React from "react";
 import { PageHeader } from "antd";
+import { useThemeSwitcher } from "react-css-theme-switcher";
 
 // displays a page header
 
 export default function Header({networkName, networks}) {
-  if(networkName){
-    return (
-      <div>
-        <PageHeader
-            title="Parametric Digital Asset Risk Management"
-            subTitle={networkName ? '@' + networkName : null}
-            avatar={{src: process.env.PUBLIC_URL + '/logo192.png', size: 50}}
-          />
-      </div>
-    )
-  }
-  else {
+   
+    const { currentTheme } = useThemeSwitcher();
+
     const names = [];
-    for(let key in networks){
-        names.push(networks[key].name);
+    if(!networkName){
+      for(let key in networks){
+          names.push(networks[key].name);
+      }
     }
     return (
       <div>
         <PageHeader
             title="Parametric Digital Asset Risk Management"
-            subTitle={"Invalid Network. Switch to " + names.join(', ')} 
-            avatar={{src: process.env.PUBLIC_URL + '/logo192.png', size: 50}}
+            subTitle={networkName ? '@' + networkName : "Invalid Network. Switch to " + names.join(', ')}
+            avatar={{src: process.env.PUBLIC_URL + '/logo192_'+ currentTheme + '.png', size: 50}}
           />
       </div>
-    )
-  }
+    );
 }
