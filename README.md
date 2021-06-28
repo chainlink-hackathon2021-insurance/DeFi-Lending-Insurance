@@ -4,7 +4,7 @@
 
 Project scaffolded with: [Scaffold ETH by Austin Griffith](https://github.com/austintgriffith/scaffold-eth)
 
-Test URL (Kovan): https://ipfs.io/ipfs/QmQZF7WaEaj1vGmitv7k5o8jeuJMGtRVB1CHTqLwK5Zmyn
+Test URL (Kovan): https://ipfs.io/ipfs/QmRvzCpa6GrqKvkDFXPRtXBzRTrBg8Zj2Fb9Nwed93TPh8
 
 ## Requirements
 
