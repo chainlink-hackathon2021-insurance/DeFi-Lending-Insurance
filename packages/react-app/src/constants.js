@@ -35,6 +35,12 @@ export const NETWORKS = {
         blockExplorer: "https://kovan.etherscan.io/",
         faucet: "https://gitter.im/kovan-testnet/faucet",//https://faucet.kovan.network/
     },
+    421611: {
+        name: "arbitrum_rinkeby",
+        chainId: 421611,
+        blockExplorer: "https://rinkeby-explorer.arbitrum.io/",
+        faucet: "https://faucet.rinkeby.io/"    
+    },
     /*
     4: {
         name: "rinkeby",

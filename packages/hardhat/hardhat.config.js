@@ -23,7 +23,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = "localhost";
+const defaultNetwork = "arbitrum_rinkeby";
 
 function mnemonic() {
   try {
@@ -96,6 +96,14 @@ module.exports = {
         mnemonic: mnemonic(),
       },
     },
+    arbitrum_rinkeby: {
+      url: 'https://rinkeby.arbitrum.io/rpc',
+      gasPrice: 2879383720,
+      gasLimit: 800000,
+      accounts: {
+        mnemonic: mnemonic(),
+      }
+    }
   },
   solidity: {
     compilers: [

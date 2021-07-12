@@ -105,7 +105,7 @@ function App(props) {
     if(!writeContracts) { return; }
     if(!network) { return; }
     //TODO: How can we make this better?
-    if(network.name === "localhost"){
+    if(network.name === "localhost" || network.name === "arbitrum_rinkeby"){
       setLiquidityProtocolToAddressMap({
         "AAVE":  writeContracts.LiquidityProtocolMock.address,
         "Mock" : writeContracts.LiquidityProtocolMock.address,

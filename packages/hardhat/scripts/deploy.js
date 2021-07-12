@@ -10,7 +10,7 @@ const main = async () => {
   console.log("\n\n 📡 Deploying... to "+targetNetwork+"\n");
   const [deployer, client, donee] = await ethers.getSigners();
 
-  if(targetNetwork === "localhost"){
+  if(targetNetwork === "localhost" || targetNetwork === "arbitrum_rinkeby"){
     const tusdMock = await deploy("TUSDMock");
     const reserveTokenMock = await deploy("ReserveTokenMock");
     const tusdReserveMock = await deploy("MockTUSDReserveFeed", [8, '32450358663000000']);
