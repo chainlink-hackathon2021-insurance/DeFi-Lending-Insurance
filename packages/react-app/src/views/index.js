@@ -1,4 +1,3 @@
-export { default as Subgraph } from "./Subgraph";
 export { default as RegistrationSuccess } from "./RegistrationSuccess";
 export { default as SmartContractDetails } from "./SmartContractDetails"; 
 export { default as ReviewAndPurchase } from "./ReviewAndPurchase"; 
