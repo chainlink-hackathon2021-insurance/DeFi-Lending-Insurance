@@ -17,7 +17,7 @@ const { Footer } = Layout;
 // 😬 Sorry for all the console logging
 const DEBUG = true
 
-function App(props) {
+function App() {
 
   const [injectedProvider, setInjectedProvider] = useState(null);
   const [network, setNetwork] = useState(null);
