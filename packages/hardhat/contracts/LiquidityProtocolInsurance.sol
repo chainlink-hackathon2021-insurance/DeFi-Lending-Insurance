@@ -9,8 +9,9 @@ import "@chainlink/contracts/src/v0.7/interfaces/AggregatorV3Interface.sol";
 
 import "./interfaces/liquidityProtocol/ILiquidityProtocol.sol";
 import "./InsuranceContract.sol";
+import "./KeeperCompatibleInterface.sol";
 
-contract LiquidityProtocolInsurance is Ownable{
+contract LiquidityProtocolInsurance is Ownable, KeeperCompatibleInterface{
 
     //Library for safe math operations (overflow, underflow)
     using SafeMath for uint256;
@@ -164,6 +165,16 @@ contract LiquidityProtocolInsurance is Ownable{
         return shouldMakeTransaction;
     }
 
+    function checkForSignificantReserveDecrease() public onlyOwner returns(bool)  {
+        for(uint liquidityAssetPairsIdx = 0; liquidityAssetPairsIdx < liquidityAssetPairs.length; liquidityAssetPairsIdx++){
+            LiquidityAssetPair storage pair = liquidityAssetPairs[liquidityAssetPairsIdx];
+            uint256 decreasePercentage = calculateReserveDecreasePercentage(pair);
+            if(decreasePercentage >= MAXIMUM_RESERVE_DECREASE_PERCENTAGE){
+                return true;
+            }
+        }
+    }
+
     /*----------  ADMINISTRATOR ONLY FUNCTIONS  ----------*/
     
     function setTUSDSupplyFeed(address _tusdSupplyFeedAddress) external onlyOwner {
@@ -272,6 +283,26 @@ contract LiquidityProtocolInsurance is Ownable{
 
     function equals(LiquidityAssetPair memory _first, LiquidityAssetPair memory _second) private pure returns (bool) {
         return _first.liquidityProtocol == _second.liquidityProtocol;
+    }
+
+    /*----------  CHAINLINK KEEPERS  ----------*/
+
+    function checkUpkeep(bytes calldata checkData) external override returns (bool upkeepNeeded, bytes memory performData) {
+        bool tusdCheckFailed = checkStatusForUnstableTUSDPeg();
+        bool lendingProtocolReserveFail = checkForSignificantReserveDecrease();
+        bytes memory execution; 
+        bool shouldDoUpkeep = tusdCheckFailed || lendingProtocolReserveFail;
+        if(tusdCheckFailed){
+            execution = abi.encodeWithSignature("checkForUnstableTUSDPegAndPay()");
+        }
+        if(lendingProtocolReserveFail){
+            execution = abi.encodeWithSignature("checkForSignificantReserveDecreaseAndPay()");
+        }        
+        return (shouldDoUpkeep, execution);
+    }
+
+    function performUpkeep(bytes calldata performData) external override {
+        address(this).call(performData);
     }
 
 }
