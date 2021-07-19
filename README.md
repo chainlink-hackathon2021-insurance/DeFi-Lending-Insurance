@@ -6,7 +6,7 @@ Project scaffolded with: [Scaffold ETH by Austin Griffith](https://github.com/au
 
 Test URL (Kovan): https://ipfs.io/ipfs/QmRvzCpa6GrqKvkDFXPRtXBzRTrBg8Zj2Fb9Nwed93TPh8
 
-Test URL (Kovan + Arbitrum): https://ipfs.io/ipfs/QmdycWn1me3KZ4exFDCVw46bBJrP8JVhmgrFV2bKyg9wBs
+Test URL (Kovan + Arbitrum): https://ipfs.io/ipfs/QmNuhk41JQ4e3DJQSmwnzdm3T1DdjxL9L34D2NdA8J72iX
 
 ## Requirements
 
