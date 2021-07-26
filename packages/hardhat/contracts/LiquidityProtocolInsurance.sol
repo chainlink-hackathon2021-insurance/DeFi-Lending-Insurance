@@ -173,6 +173,7 @@ contract LiquidityProtocolInsurance is Ownable, KeeperCompatibleInterface{
                 return true;
             }
         }
+        return false;
     }
 
     /*----------  ADMINISTRATOR ONLY FUNCTIONS  ----------*/
@@ -208,7 +209,7 @@ contract LiquidityProtocolInsurance is Ownable, KeeperCompatibleInterface{
         }
     }
 
-    function checkForUnstableTUSDPegAndPay() external onlyOwner {                       
+    function checkForUnstableTUSDPegAndPay() public onlyOwner {
         int supply; 
         int reserve;
         int percentage = 0;
@@ -288,21 +289,35 @@ contract LiquidityProtocolInsurance is Ownable, KeeperCompatibleInterface{
     /*----------  CHAINLINK KEEPERS  ----------*/
 
     function checkUpkeep(bytes calldata checkData) external override returns (bool upkeepNeeded, bytes memory performData) {
-        bool tusdCheckFailed = checkStatusForUnstableTUSDPeg();
-        bool lendingProtocolReserveFail = checkForSignificantReserveDecrease();
-        bytes memory execution; 
-        bool shouldDoUpkeep = tusdCheckFailed || lendingProtocolReserveFail;
-        if(tusdCheckFailed){
-            execution = abi.encodeWithSignature("checkForUnstableTUSDPegAndPay()");
-        }
-        if(lendingProtocolReserveFail){
-            execution = abi.encodeWithSignature("checkForSignificantReserveDecreaseAndPay()");
-        }        
+        bool tusdCheck = checkStatusForUnstableTUSDPeg();
+        bool lendingProtocolReserveCheck = checkForSignificantReserveDecrease();
+        bool shouldDoUpkeep = tusdCheck || lendingProtocolReserveCheck;
+        bytes memory execution = "";
+        if(lendingProtocolReserveCheck && tusdCheck) {
+            execution = "b";
+        } 
+        else if(tusdCheck) {
+            execution = "t";
+        } 
+        else if(lendingProtocolReserveCheck) {
+            execution = "l";
+        } 
         return (shouldDoUpkeep, execution);
     }
 
     function performUpkeep(bytes calldata performData) external override {
-        address(this).call(performData);
+        bytes32 performDataString = keccak256(performData);
+ 
+        if (performDataString == keccak256("b")) {
+            checkForUnstableTUSDPegAndPay();
+            checkForSignificantReserveDecreaseAndPay();
+        }
+        else if (performDataString == keccak256("t")) {
+            checkForUnstableTUSDPegAndPay();
+        }
+        else if (performDataString == keccak256("l")) {
+            checkForSignificantReserveDecreaseAndPay();
+        }
     }
 
 }

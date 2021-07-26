@@ -144,7 +144,7 @@ describe("Liquidity Protocol Insurance App", () => {
 
   });
 
-  describe("Payouts - Proof of Reserve", () => {
+  describe("Payouts - Proof of Reserve (Parameter Two)", () => {
     it("Should NOT pay out if PoR / PoS is STABLE", async () => {
       const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
 
@@ -169,6 +169,43 @@ describe("Liquidity Protocol Insurance App", () => {
       await mainInsuranceContractUnstableReserve.checkForUnstableTUSDPegAndPay();         
       expect(await tusdMock.balanceOf(insuranceContractAddress)).to.be.equal(0); 
       expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured);              
+    });
+
+  });
+
+  describe("Chainlink Keepers", () => {
+    it("Should execute upkeep function for PoS/PoR", async () => {
+      const fooCheckData = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("foo"));
+      const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
+      expect(await mainInsuranceContract.checkStatusForUnstableTUSDPeg()).to.be.false;
+      const insuranceContractTUSDBalanceBefore = await tusdMock.balanceOf(insuranceContractAddress);
+      expect(insuranceContractTUSDBalanceBefore).to.be.equal(0);
+      
+      const { upkeepNeeded } = await mainInsuranceContract.callStatic.checkUpkeep(fooCheckData);
+      
+      expect(upkeepNeeded).to.be.false;
+      const insuranceContractTUSDBalanceAfter = await tusdMock.balanceOf(insuranceContractAddress);
+      expect(insuranceContractTUSDBalanceBefore).to.be.equal(insuranceContractTUSDBalanceAfter);
+
+    });
+
+    it("Should execute upkeep function for PoS/PoR", async () => {
+      const fooCheckData = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("foo"));
+      await tusdMock.faucet(addr1.address, 2000);
+      await tusdMock.connect(addr1).approve(mainInsuranceContractUnstableReserve.address, 2000);
+      await mainInsuranceContractUnstableReserve.connect(addr1).registerInsurancePolicy(
+      validCoverageData.amountInsured, 
+      validCoverageData.liquidityProtocol,
+      false);
+
+      const insuranceContractAddress = await mainInsuranceContractUnstableReserve.insuranceContractOwnerships(addr1.address, 0);
+      
+      const { upkeepNeeded, performData } = await mainInsuranceContractUnstableReserve.callStatic.checkUpkeep(fooCheckData);
+      await mainInsuranceContractUnstableReserve.performUpkeep(performData);
+      
+      expect(upkeepNeeded).to.be.true;
+      expect(await tusdMock.balanceOf(insuranceContractAddress)).to.be.equal(0); 
+      expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured);
     });
 
   });
