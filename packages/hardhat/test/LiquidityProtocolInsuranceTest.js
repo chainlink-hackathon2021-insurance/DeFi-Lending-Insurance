@@ -174,13 +174,13 @@ describe("Liquidity Protocol Insurance App", () => {
   });
 
   describe("Chainlink Keepers", () => {
-    it("Should execute upkeep function for PoS/PoR", async () => {
-      const fooCheckData = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("foo"));
+    it("Shouldn't execute upkeep function for STABLE PoS/PoR", async () => {
       const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
       expect(await mainInsuranceContract.checkStatusForUnstableTUSDPeg()).to.be.false;
       const insuranceContractTUSDBalanceBefore = await tusdMock.balanceOf(insuranceContractAddress);
       expect(insuranceContractTUSDBalanceBefore).to.be.equal(0);
       
+      const fooCheckData = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("foo"));
       const { upkeepNeeded } = await mainInsuranceContract.callStatic.checkUpkeep(fooCheckData);
       
       expect(upkeepNeeded).to.be.false;
@@ -189,23 +189,53 @@ describe("Liquidity Protocol Insurance App", () => {
 
     });
 
-    it("Should execute upkeep function for PoS/PoR", async () => {
-      const fooCheckData = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("foo"));
+    it("Should execute upkeep function for UNSTABLE PoS/PoR", async () => {
       await tusdMock.faucet(addr1.address, 2000);
       await tusdMock.connect(addr1).approve(mainInsuranceContractUnstableReserve.address, 2000);
       await mainInsuranceContractUnstableReserve.connect(addr1).registerInsurancePolicy(
       validCoverageData.amountInsured, 
       validCoverageData.liquidityProtocol,
       false);
-
       const insuranceContractAddress = await mainInsuranceContractUnstableReserve.insuranceContractOwnerships(addr1.address, 0);
-      
+
+      const fooCheckData = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("foo"));
       const { upkeepNeeded, performData } = await mainInsuranceContractUnstableReserve.callStatic.checkUpkeep(fooCheckData);
       await mainInsuranceContractUnstableReserve.performUpkeep(performData);
       
       expect(upkeepNeeded).to.be.true;
       expect(await tusdMock.balanceOf(insuranceContractAddress)).to.be.equal(0); 
       expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured);
+    });
+
+    it("Shoudn't execute upkeep function for NORMAL liquidity protocol", async () => {
+        const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
+
+        const insuranceContractTUSDBalanceBefore = await tusdMock.balanceOf(insuranceContractAddress);
+        expect(insuranceContractTUSDBalanceBefore).to.be.equal(0);
+
+        const fooCheckData = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("foo"));
+        const { upkeepNeeded } = await mainInsuranceContract.callStatic.checkUpkeep(fooCheckData);
+
+        expect(upkeepNeeded).to.be.false;
+        const insuranceContractTUSDBalanceAfter = await tusdMock.balanceOf(insuranceContractAddress);
+        expect(insuranceContractTUSDBalanceBefore).to.be.equal(insuranceContractTUSDBalanceAfter);
+    });
+
+    it("Should execute upkeep function for DRAINED liquidity protocol", async () => {
+        expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(0); 
+        const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
+        
+        const currentTUSDInLiquidityProtocolMockReserve = await liquidityProtocolMock.getReserve(tusdMock.address);
+        const decreasedTUSDInReserve = Math.floor(currentTUSDInLiquidityProtocolMockReserve - (currentTUSDInLiquidityProtocolMockReserve * 0.75));
+        await liquidityProtocolMock.setReserve(tusdMock.address, decreasedTUSDInReserve);
+  
+        const fooCheckData = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("foo"));
+        const { upkeepNeeded, performData } = await mainInsuranceContract.callStatic.checkUpkeep(fooCheckData);
+        await mainInsuranceContract.performUpkeep(performData);
+        
+        expect(upkeepNeeded).to.be.true;
+        expect(await tusdMock.balanceOf(insuranceContractAddress)).to.be.equal(0); 
+        expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured); 
     });
 
   });

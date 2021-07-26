@@ -293,10 +293,7 @@ contract LiquidityProtocolInsurance is Ownable, KeeperCompatibleInterface{
         bool lendingProtocolReserveCheck = checkForSignificantReserveDecrease();
         bool shouldDoUpkeep = tusdCheck || lendingProtocolReserveCheck;
         bytes memory execution = "";
-        if(lendingProtocolReserveCheck && tusdCheck) {
-            execution = "b";
-        } 
-        else if(tusdCheck) {
+        if(tusdCheck) {
             execution = "t";
         } 
         else if(lendingProtocolReserveCheck) {
@@ -307,12 +304,7 @@ contract LiquidityProtocolInsurance is Ownable, KeeperCompatibleInterface{
 
     function performUpkeep(bytes calldata performData) external override {
         bytes32 performDataString = keccak256(performData);
- 
-        if (performDataString == keccak256("b")) {
-            checkForUnstableTUSDPegAndPay();
-            checkForSignificantReserveDecreaseAndPay();
-        }
-        else if (performDataString == keccak256("t")) {
+        if (performDataString == keccak256("t")) {
             checkForUnstableTUSDPegAndPay();
         }
         else if (performDataString == keccak256("l")) {
