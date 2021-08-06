@@ -122,12 +122,12 @@ function App() {
     }
     else if(network.name === "kovan"){
       setLiquidityProtocolToAddressMap({
-        "AAVE":  "0xb19e8A3ac5b23ac044a3cf96837d7c9C18526C9E", 
-        "Mock" : "0xA318B38714C5dab399CB810b69A81AAA1DeAC8ef",
+        "AAVE":  "0x5571f2E8EB85a807e839eDeDb4c680A66A1B68f8", 
+        "Mock" : "0xeb6326060ea5210bd87ffaDF5CcA8959B2e9E2B6",
       });
       setMockPoRPoSAddresses({
-        "reserve" : "0xe779281F9E96bCFDfD04e880CfB53761B980DDc1",
-        "supply" : "0x497F69210eEB08203e6a88D40dd5593B81F13e67"
+        "reserve" : "0x93a5b221F7cA577A747dd76CEE206019dBA0AA93",
+        "supply" : "0xe1587EeceA8Dd8D579dAE20E385c2F6d1a84F19d"
       });
       setRealPoRPoSAddresses({
         "reserve" : "0xdD6Dbd1861971455C20d5bd00DeA4DDE704f3554",
