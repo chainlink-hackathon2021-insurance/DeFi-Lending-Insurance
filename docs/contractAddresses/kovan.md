@@ -1,22 +1,21 @@
-
- 📡 Deploying... to kovan
+📡 Deploying... to kovan
 
  🛰  Deploying: MockTUSDReserveFeed
- 📄 MockTUSDReserveFeed deployed to: 0x534DffBFC0B0a22dC4d144493FB712A9e6338070
- ⛽ 0.002212345 ETH, tx hash 0xee2d0943a7065e6dd24c9afc76c6be732344607761941719bfe7ba199eb14009
+ 📄 MockTUSDReserveFeed deployed to: 0x93a5b221F7cA577A747dd76CEE206019dBA0AA93
+ ⛽ 0.0004867159 ETH, tx hash 0xab3d4c12114980b947b17818ed7037d214942743d8b049dbfe79ed9232bdf9e2
  🛰  Deploying: MockTUSDSupplyFeed
- 📄 MockTUSDSupplyFeed deployed to: 0xeAA8183F217d3B607c878B217712f95100D2dF9e
- ⛽ 0.002212285 ETH, tx hash 0xb2d831c8c190b7db7fb069426a28cbae3f41bfe33b817b31ef62866495266504
+ 📄 MockTUSDSupplyFeed deployed to: 0xe1587EeceA8Dd8D579dAE20E385c2F6d1a84F19d
+ ⛽ 0.0004867027 ETH, tx hash 0xbb8864e375cb0c0830e509128a9f53dbe4fc25feae0c7ec1cf77b98006eed96a
  🛰  Deploying: AaveLiquidityProtocol
- 📄 AaveLiquidityProtocol deployed to: 0x224230519366b307C92c6530611826666d92A182
- ⛽ 0.001955865 ETH, tx hash 0x8faf817f36fc0b1b257568a36bbe179c601ae33fe3b61f46e799bdfb419dc9d5
+ 📄 AaveLiquidityProtocol deployed to: 0x5571f2E8EB85a807e839eDeDb4c680A66A1B68f8
+ ⛽ 0.0004302903 ETH, tx hash 0x30212bdadd8f678dce53f1f5d44986dad9b6d6aed6258b814a4f68d0a505301c
  🛰  Deploying: ReserveTokenMock
- 📄 ReserveTokenMock deployed to: 0x2A3E8185EfcB371BF36D642c5329C45caBF7265d
- ⛽ 0.004986755 ETH, tx hash 0x948043faf2d32930f7214079a3533feee02b3fb1984659f8b2ba620919cd0f8c
+ 📄 ReserveTokenMock deployed to: 0xeb6326060ea5210bd87ffaDF5CcA8959B2e9E2B6
+ ⛽ 0.0010970861 ETH, tx hash 0x2b701bf6ea8776793734eb20d52dba07ffab0fa075c130ffde087e18ef4ab5a3
  🛰  Deploying: LiquidityProtocolMock
- 📄 LiquidityProtocolMock deployed to: 0xe82e0ee523c5Faf5825d74Ab29dfe6f0CE2674ee
- ⛽ 0.00158615 ETH, tx hash 0x07060194ed2567d05c6d5da9c3bbbf50dcf4fff0daf1ba6271e237cc5923ab53
+ 📄 LiquidityProtocolMock deployed to: 0x97A518E928e68647d20F35173Ce0D10DA44c3aF0
+ ⛽ 0.000348953 ETH, tx hash 0xebe5f1be868478da3cda706257c3afa8929b9604880007e9f64c6d6f272b5f0f
  🛰  Deploying: LiquidityProtocolInsurance
- 📄 LiquidityProtocolInsurance deployed to: 0xa346396a861865826a97E194d1AE45BbeE765EFb
- ⛽ 0.01625224 ETH, tx hash 0xa6eb0805767363abf383971cb59787e6082be70d5f43075a483c427b39eb8d03
+ 📄 LiquidityProtocolInsurance deployed to: 0x363845ECB28700Be6Cb02919f346af7fee9E9D0e
+ ⛽ 0.0035754928 ETH, tx hash 0x0b27bfebd16e3f20788491e3db0bd93a53f1ae25f6eafe67ae5dba0292a1d02d
  💾  Artifacts (address, abi, and args) saved to:  packages/hardhat/artifacts/ 
