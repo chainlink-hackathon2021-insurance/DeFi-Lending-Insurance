@@ -289,27 +289,12 @@ contract LiquidityProtocolInsurance is Ownable, KeeperCompatibleInterface{
     /*----------  CHAINLINK KEEPERS  ----------*/
 
     function checkUpkeep(bytes calldata checkData) external override returns (bool upkeepNeeded, bytes memory performData) {
-        bool tusdCheck = checkStatusForUnstableTUSDPeg();
-        bool lendingProtocolReserveCheck = checkForSignificantReserveDecrease();
-        bool shouldDoUpkeep = tusdCheck || lendingProtocolReserveCheck;
-        bytes memory execution = "";
-        if(tusdCheck) {
-            execution = "t";
-        } 
-        else if(lendingProtocolReserveCheck) {
-            execution = "l";
-        } 
-        return (shouldDoUpkeep, execution);
+        bool shouldDoUpkeep = checkStatusForUnstableTUSDPeg();
+        return (shouldDoUpkeep, checkData);
     }
 
     function performUpkeep(bytes calldata performData) external override {
-        bytes32 performDataString = keccak256(performData);
-        if (performDataString == keccak256("t")) {
-            checkForUnstableTUSDPegAndPay();
-        }
-        else if (performDataString == keccak256("l")) {
-            checkForSignificantReserveDecreaseAndPay();
-        }
+        checkForUnstableTUSDPegAndPay();
     }
 
 }

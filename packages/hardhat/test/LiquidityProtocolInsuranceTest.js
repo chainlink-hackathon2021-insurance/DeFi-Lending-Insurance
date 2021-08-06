@@ -206,7 +206,7 @@ describe("Liquidity Protocol Insurance App", () => {
       expect(await tusdMock.balanceOf(insuranceContractAddress)).to.be.equal(0); 
       expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured);
     });
-
+/*
     it("Shoudn't execute upkeep function for NORMAL liquidity protocol", async () => {
         const insuranceContractAddress = await mainInsuranceContract.insuranceContractOwnerships(addr1.address, 0);
 
@@ -237,7 +237,7 @@ describe("Liquidity Protocol Insurance App", () => {
         expect(await tusdMock.balanceOf(insuranceContractAddress)).to.be.equal(0); 
         expect(await tusdMock.balanceOf(addr1.address)).to.be.equal(validCoverageData.amountInsured); 
     });
-
+*/
   });
 
   describe("Donations" , () => {
