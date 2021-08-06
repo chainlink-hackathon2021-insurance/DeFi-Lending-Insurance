@@ -75,7 +75,6 @@ export default function ReviewAndPurchase({setRoute, depositAmount, liquidityPro
                     }
                 }}>Pending Approval</Button>
                 <Button disabled={!approved} type="primary" onClick={async ()=>{
-                    console.log("Sending the next parameters: ", parseEther(depositAmount.toString()), liquidityProtocolToAddressMap[liquidityProtocol], supportsDonations);
                     const result = await tx( writeContracts.LiquidityProtocolInsurance.registerInsurancePolicy(
                         parseEther(depositAmount.toString()), 
                         liquidityProtocolToAddressMap[liquidityProtocol],
