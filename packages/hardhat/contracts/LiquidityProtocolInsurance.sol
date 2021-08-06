@@ -288,8 +288,14 @@ contract LiquidityProtocolInsurance is Ownable, KeeperCompatibleInterface{
 
     /*----------  CHAINLINK KEEPERS  ----------*/
 
+    event KeepersCallEvent (
+        bool shouldDoUpkeep
+    );
+
+
     function checkUpkeep(bytes calldata checkData) external override returns (bool upkeepNeeded, bytes memory performData) {
         bool shouldDoUpkeep = checkStatusForUnstableTUSDPeg();
+        emit KeepersCallEvent(shouldDoUpkeep);
         return (shouldDoUpkeep, checkData);
     }
 
