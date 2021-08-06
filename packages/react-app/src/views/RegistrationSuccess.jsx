@@ -43,15 +43,12 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
                     style={{textAlign: "left"}}
                     {...layout}
                     layout="vertical"
-                    name="basic"
                     initialValues={{
                         remember: true,
                     }}
                     >
                     <Form.Item
-                        label="Address"
-                        name="address"
-                        
+                        label="Address"                        
                     >
 
                         {address}
@@ -59,7 +56,6 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
 
                     <Form.Item
                         label="Selected Platform"
-                        name="platform"
                     >
                          <Select onChange={(val) => {setLiquidityProtocol(val)}} defaultValue={liquidityProtocol ? liquidityProtocol : "aave" }>
                             <Option value="AAVE">AAVE</Option>
@@ -69,7 +65,6 @@ export default function RegistrationSuccess({address, setRoute, liquidityProtoco
 
                     <Form.Item
                         label="Selected Product"
-                        name="product"
                     >
                          <Select defaultValue="TUSD" disabled>
                             <Option value="TUSD">TUSD</Option>

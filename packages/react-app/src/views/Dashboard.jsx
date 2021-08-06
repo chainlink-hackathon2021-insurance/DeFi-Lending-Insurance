@@ -13,7 +13,7 @@ export default function Dashboard({writeContracts, provider, address, tx, signer
     const insuranceContractAbi = [
         "function getReserveTokenBalance() external view returns(uint256)",
         "function getReserveTokenAddress() external view returns(address)",
-        "function withdraw() external onlyOwner returns (uint256)", 
+        "function withdraw() external returns (uint256)", 
         "function isPolicyActive() public view returns(bool)",
         "function getReserveTokenDenomination() external view returns(string memory)",
         "function hasDonationsEnabled() external view returns(bool)"
