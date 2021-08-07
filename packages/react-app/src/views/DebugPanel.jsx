@@ -65,6 +65,12 @@ export default function DebugPanel({writeContracts, tx, tusdAddress, provider, m
   async function triggerTUSDReserveStatus() {
     tx(writeContracts.LiquidityProtocolInsurance.checkForUnstableTUSDPegAndPay());
   }
+  
+  async function checkTUSDReserveStatus() {
+    const status = await writeContracts.LiquidityProtocolInsurance.checkStatusForUnstableTUSDPeg();
+    console.log("Contract Address: ", writeContracts.LiquidityProtocolInsurance.address);
+    console.log("checkStatusForUnstableTUSDPeg()", status);
+  }
 
   async function setUnbalancedReserveValue() {
     tx(writeContracts.MockTUSDReserveFeed.updateAnswer(BigNumber.from('21326049998805076')));
@@ -108,6 +114,7 @@ export default function DebugPanel({writeContracts, tx, tusdAddress, provider, m
             <p><Button type="danger" style={{ width: "238px"}} onClick={async ()=> { setReserveContractToMock();}} >PoR: Set Mock PoR</Button></p>
             <p><Button type="danger" style={{ width: "238px"}} onClick={async ()=> { setSupplyContractToMock();}} >PoS: Set Mock PoS</Button></p>
             <p><Button type="danger" style={{ width: "238px"}} onClick={async ()=> { setUnbalancedReserveValue();}} >PoR: Set unbalanced value</Button></p>
+            <p><Button type="primary" style={{ width: "238px"}} onClick={async ()=> { checkTUSDReserveStatus();}} >Console PoS/PoR status</Button></p>
             <p><Button type="primary" style={{ width: "238px"}} onClick={async ()=> { triggerTUSDReserveStatus();}} >Check PoS/PoR status</Button></p>
             <p><Button type="primary" style={{ width: "238px"}} onClick={async ()=> { setBalancedReserveValue();}} >PoR: Set balanced value</Button></p>
             <p><Button type="primary" style={{ width: "238px"}} onClick={async ()=> { setReserveContractToReal();}} >PoR: Set Real PoR</Button></p>
