@@ -1,21 +1,21 @@
  📡 Deploying... to kovan
 
  🛰  Deploying: MockTUSDReserveFeed
- 📄 MockTUSDReserveFeed deployed to: 0xC7657680E857dE6677Be24d5f5DCD7FFB1d8BBf1
- ⛽ 0.0004867159 ETH, tx hash 0x8482a38b081eb5873821b9444b5fe7e457cce869d50668bce07fabfeeffc96c4
+ 📄 MockTUSDReserveFeed deployed to: 0xAc15d3206b7903f1Fe0dEDda5953C223B241E798
+ ⛽ 0.000442469 ETH, tx hash 0xc7ff8eb4eb3a0ee557d312b69ac815c4549cedff272615e59e18c1dddf2471dc
  🛰  Deploying: MockTUSDSupplyFeed
- 📄 MockTUSDSupplyFeed deployed to: 0x26E94AD005Db53E95E03CF1e3EbACCD64e4b41C7
- ⛽ 0.0004867027 ETH, tx hash 0xa1510c1b100f95d32f966d4bbff839f4ab14de3d93c5202b5223f3a1d7319c75
+ 📄 MockTUSDSupplyFeed deployed to: 0xb3f7A7B42EB6139993a6233e341c2A3e16B4E512
+ ⛽ 0.000442457 ETH, tx hash 0x7c0f8173648df26d69423ad3d29f04cfe6cb9d0df2801c57ffd49cb7338f4bbb
  🛰  Deploying: AaveLiquidityProtocol
- 📄 AaveLiquidityProtocol deployed to: 0x8cdb9675164E8FAE770BC12fCbcB3d0A49AcE92A
- ⛽ 0.0004302903 ETH, tx hash 0x0452fa2469183154bd1b463e5addea273caa477b87bb4b2c35e333883e81ea0e
+ 📄 AaveLiquidityProtocol deployed to: 0xCed8F10Fe5Eaa832685Ca5CeA9776C03156BdBd4
+ ⛽ 0.000391173 ETH, tx hash 0x26484f10a6cfbf2f6a07e968b44742c14372c1e7e689cae619799ef76dee868d
  🛰  Deploying: ReserveTokenMock
- 📄 ReserveTokenMock deployed to: 0x6748E3310A694819002e43355737EF56c9FcA1E7
- ⛽ 0.0010970861 ETH, tx hash 0xa5b98b7abb6b041fe80c2f890a8ffd815fc100a0716161ba59fde5979ea9d6a3
+ 📄 ReserveTokenMock deployed to: 0x2108cEe40397C354607893fe81a21Be7d7d5Bc1b
+ ⛽ 0.000997351 ETH, tx hash 0x807e370eac1efca00c29a91397f435d21c1be5f8b52dba290d1fb70cdb550f5b
  🛰  Deploying: LiquidityProtocolMock
- 📄 LiquidityProtocolMock deployed to: 0xcba7B3E5D523a77495Ee18D1ba5f69f876d74189
- ⛽ 0.0003489398 ETH, tx hash 0x19d8eb259375623e14e164f6dfb98b71101ca2f9d6596b210596ba9f8863e178
+ 📄 LiquidityProtocolMock deployed to: 0x65Bc80324379F1543CAE5db08f00C15791e2c100
+ ⛽ 0.00031723 ETH, tx hash 0xd511718b4dfae5ab735c563ee1193e0e529dadb7634428d7c0cafcf2f93b9d71
  🛰  Deploying: LiquidityProtocolInsurance
- 📄 LiquidityProtocolInsurance deployed to: 0x50439eA3D144E1cE12258d9cde8447FF2bbF7Da0
- ⛽ 0.0035274602 ETH, tx hash 0x5e19cc4dd30c509fec14b02fc4d21949b9d15fa6c677bd6a885d36c86cd5af75
+ 📄 LiquidityProtocolInsurance deployed to: 0xCA745E20D5c3f69a812397307f352cFa4a09FA4f
+ ⛽ 0.003176611 ETH, tx hash 0x567948bc1aaff7be161fdb3c043d2d3a91b2ff1db85f2cfb1ba8b42963d25a56
  💾  Artifacts (address, abi, and args) saved to:  packages/hardhat/artifacts/ 

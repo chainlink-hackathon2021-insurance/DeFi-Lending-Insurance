@@ -209,7 +209,7 @@ contract LiquidityProtocolInsurance is Ownable, KeeperCompatibleInterface{
         }
     }
 
-    function checkForUnstableTUSDPegAndPay() public onlyOwner {
+    function checkForUnstableTUSDPegAndPay() private {
         int supply; 
         int reserve;
         int percentage = 0;
